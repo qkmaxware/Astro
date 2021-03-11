@@ -27,10 +27,10 @@ jobs:
       env:
         # Work around https://github.com/actions/setup-dotnet/issues/29
         DOTNET_ROOT: ${{ runner.tool_cache }}/dncs/${{ matrix.dotnet }}/x64
-      run: dotnet pack --configuration Release --output nupkg
+      run: dotnet pack --configuration Release --output .
     - name: Publish Nuget Package
       env:
         # Work around https://github.com/actions/setup-dotnet/issues/29
         DOTNET_ROOT: ${{ runner.tool_cache }}/dncs/${{ matrix.dotnet }}/x64
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: dotnet nuget push "nupkg\*.nupkg" --source "qkmaxware" --skip-duplicate --api-key ${GITHUB_TOKEN}
+      run: dotnet nuget push "*.nupkg" --source "qkmaxware" --skip-duplicate --api-key ${GITHUB_TOKEN}
