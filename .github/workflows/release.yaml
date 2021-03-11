@@ -18,13 +18,6 @@ jobs:
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: '${{ matrix.dotnet }}'
-    - name: Register Nuget Source
-      env:
-        GITHUB_SOURCE: https://nuget.pkg.github.com/qkmaxware/index.json
-        GITHUB_USERNAME: qkmaxware
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      shell: cmd
-      run: dotnet nuget add source %GITHUB_SOURCE% --name "GitHub" --username %GITHUB_USERNAME% --password %GITHUB_TOKEN%
     - name: Restore Packages
       env: 
         GITHUB_USERNAME: qkmaxware
@@ -39,4 +32,4 @@ jobs:
       env:
         # Work around https://github.com/actions/setup-dotnet/issues/29
         DOTNET_ROOT: ${{ runner.tool_cache }}/dncs/${{ matrix.dotnet }}/x64
-      run: dotnet nuget push nupkg\**\*.nupkg --source "GitHub" --skip-duplicate
+      run: dotnet nuget push nupkg\**\*.nupkg --source "qkmaxware" --skip-duplicate
