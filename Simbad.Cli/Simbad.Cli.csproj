@@ -6,7 +6,7 @@
     <Authors>Colin Halseth</Authors>
     <PackageTags>simbad query</PackageTags>
     <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
-    <RepositoryUrl></RepositoryUrl>
+    <RepositoryUrl>https://github.com/qkmaxware/Astro.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageDescription>
       Qkmaxware.Astro.Cli.Simbad is a dotnet cli tool for querying from the SIMBAD astronomical database
