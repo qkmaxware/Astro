@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Qkmaxware.Astro</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Colin Halseth</Authors>
+    <PackageTags>astronomical</PackageTags>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <RepositoryUrl></RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageDescription>
+      Qkmaxware.Astro is a library of tools for astronomical caclulations and quering
+    </PackageDescription>
+    <PackageOutputPath>./../nupkg</PackageOutputPath>
+
+    <TargetFramework>netstandard2.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\LICENSE.md" CopyToOutputDirectory="Always" Pack="true" PackagePath="$(PackageLicenseFile)"/>
+  </ItemGroup>
+
+</Project>
