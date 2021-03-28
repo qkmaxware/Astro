@@ -32,6 +32,15 @@ public class VOTable {
     }
     public string this[int row, int column] => Rows[row][Fields[column]];
 
+    public string SelectFirstNonEmpty(int row, params string[] columns) {
+        int i = 0;
+        string str = string.Empty;
+        while ( i < columns.Length && string.IsNullOrEmpty(str = this[row, columns[i]]) ) {
+            i++;
+        }
+        return str;
+    }
+
     public void AddRow(Dictionary<string, string> row) {
         this.Rows.Add(row);
     }

@@ -1,11 +1,27 @@
 using System;
 using System.Globalization;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Qkmaxware.Astro {
 
 /// <summary>
+/// Json converter for Moments using julian days
+/// </summary>
+public class MomentJsonConverter : JsonConverter<Moment> {
+    public override Moment Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return Moment.FromJulianDays(reader.GetDouble());
+    }
+
+    public override void Write(Utf8JsonWriter writer, Moment value, JsonSerializerOptions options) {
+        writer.WriteNumberValue(value.JulianDay);
+    }
+}
+
+/// <summary>
 /// Specific moment in time, internally stored in UTC for astronomical computations
 /// </summary>
+[JsonConverter(typeof(MomentJsonConverter))]
 public struct Moment {
 
     /// <summary>
@@ -199,15 +215,7 @@ public struct Moment {
     }
 
     public override int GetHashCode() {
-        return HashCode.Combine(
-            this.Year,
-            this.Month, 
-            this.Day,
-            this.Hour,
-            this.Minute,
-            this.Second,
-            this.Millisecond
-        );
+        return this.JulianDay.GetHashCode();
     }
 
     public override bool Equals(object obj) {

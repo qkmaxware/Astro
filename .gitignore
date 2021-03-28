@@ -2,3 +2,7 @@ bin/
 obj/
 nupkg/
 .vscode/
+
+# Ignore this until it is ready to go
+Astro.Remote
+Astro.Observatory.Godot

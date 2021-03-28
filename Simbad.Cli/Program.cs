@@ -27,7 +27,7 @@ namespace Qkmaxware.Astro.Cli {
             var args = System.Environment.GetCommandLineArgs();
             Parser.Default.ParseArguments<Options>(args)
             .WithParsed<Options>(o => {
-                var list = Enumerable.Empty<AstronomicalEntity>();
+                var list = Enumerable.Empty<DeepSpaceEntity>();
 
                 if (!string.IsNullOrEmpty(o.id)) {
                     list = list.Concat(Simbad.WithIdentifier(o.id));
@@ -54,10 +54,10 @@ namespace Qkmaxware.Astro.Cli {
             });
         }
 
-        private static void instanceFormatted(IEnumerable<AstronomicalEntity> entities) {
-            Console.WriteLine($"new List<{nameof(AstronomicalEntity)}> {{");
+        private static void instanceFormatted(IEnumerable<DeepSpaceEntity> entities) {
+            Console.WriteLine($"new List<{nameof(DeepSpaceEntity)}> {{");
             foreach (var entity in entities) {
-                Console.WriteLine($"  new {nameof(AstronomicalEntity)} {{");
+                Console.WriteLine($"  new {nameof(DeepSpaceEntity)} (");
                 Console.WriteLine($"    name: \"{entity.Name}\",");
                 Console.WriteLine($"    epoch: Moment.FromJulianDays({entity.Epoch.JulianDay}),");
                 if( entity.Coordinates != null) {
@@ -87,12 +87,12 @@ namespace Qkmaxware.Astro.Cli {
                 }
                 Console.WriteLine($"    )");
                 }
-                Console.WriteLine($"  }},");
+                Console.WriteLine($"  ),");
             }
             Console.WriteLine("}");
         }
 
-        private static void tabFormatted(IEnumerable<AstronomicalEntity> entities) {
+        private static void tabFormatted(IEnumerable<DeepSpaceEntity> entities) {
             foreach (var entity in entities) {
                 Console.WriteLine($"{entity.Name} ({entity.Epoch.JulianDay})");
                 Console.WriteLine($"  DIST: {entity.Coordinates?.SolDistance}");

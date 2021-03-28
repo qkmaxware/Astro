@@ -19,8 +19,8 @@ public class RateLimiter {
         this.duration = duration;
     }
 
-    public T Invoke<T>(Func<T> func) {
-        T value = default(T);
+    public T? Invoke<T>(Func<T> func) where T:class {
+        T? value = default(T);
         Invoke(() => {
             value = func();
         });

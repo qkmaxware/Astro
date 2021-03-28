@@ -1,14 +1,30 @@
 using System;
+using System.Text.Json.Serialization;
+using Qkmaxware.Astro.Arithmetic;
 
 namespace Qkmaxware.Astro {
 
 /// <summary>
+/// Json converter for distance quantities
+/// </summary>
+public class DistanceJsonConverter : QuantityJsonConverter<Distance> {
+	public override string GetSuffix() => "km";
+    public override Distance ParseQuantity(double quant) => Distance.Kilometres(quant);
+    public override double GetQuantity(Distance value) => value.TotalKilometres;
+}
+
+/// <summary>
 /// Class representing astronomical distances
 /// </summary>
-public class Distance {
+[JsonConverter(typeof(DistanceJsonConverter))]
+public class Distance : IArithmeticValue<Distance> {
 
     private double value; //km
 
+    /// <summary>
+    /// Total distance in metres
+    /// </summary>
+    public double TotalMetres => TotalKilometres * 1000d;
     /// <summary>
     /// Total distance in kilometres
     /// </summary>
@@ -16,18 +32,38 @@ public class Distance {
     /// <summary>
     /// Total distance in light years
     /// </summary>
-    public double TotalLightYears => value / 9460730472580.800d;
+    public double TotalLightYears => TotalKilometres / 9460730472580.800d;
     /// <summary>
     /// Total distance in parsecs
     /// </summary>
-    public double TotalParsecs => value / 30856775812800d;
+    public double TotalParsecs => TotalKilometres / 30856775812800d;
 
     private Distance (double km) {
         this.value = km;
     }
 
     public override string ToString() {
-        return string.Format("{0:0.##}", TotalLightYears) + "ly";
+        if (value < 1) {
+            return string.Format("{0:0.##}", TotalMetres) + "m";
+        } else if (value > 9e12) {
+            return string.Format("{0:0.##}", TotalLightYears) + "ly";
+        } else {
+            return string.Format("{0:0.##}", TotalKilometres) + "km";
+        }
+    }
+
+    /// <summary>
+    /// Static instance representing 0 distance
+    /// </summary>
+    public static readonly Distance Zero = new Distance(0);
+
+    /// <summary>
+    /// Create a distance in metres
+    /// </summary>
+    /// <param name="value">metres</param>
+    /// <returns>distance</returns>
+    public static Distance Metres(double value) {
+        return new Distance(value / 1000d);
     }
 
     /// <summary>
@@ -69,6 +105,59 @@ public class Distance {
     /// <returns>distance</returns>
     public static Distance Megaparsecs(double value) {
         return Parsecs(value * 1000000d);
+    }
+
+    public Distance Add(Distance other) {
+        return this + other;
+    }
+
+    public Distance Subtract(Distance other) {
+        return this - other;
+    }
+
+    public Distance Multiply(Distance other) {
+        return this * other;
+    }
+
+    public Distance Divide(Distance other) {
+        return this / other;
+    }
+
+    public Distance Sqrt() {
+        return new Distance(Math.Sqrt(this.value));
+    }
+
+    /// <summary>
+	/// Scale this distance by a scalar value
+	/// </summary>
+	/// <param name="scale">scalar value</param>
+	/// <returns>new distance</returns>
+	public Distance Scale(double scale) {
+		return new Distance(this.value * scale);
+	}
+
+    public static Distance operator + (Distance a, Distance b) {
+        return new Distance(a.value + b .value);
+    }
+
+    public static Distance operator - (Distance a, Distance b) {
+        return new Distance(a.value - b .value);
+    }
+
+    public static Distance operator * (Distance a, Distance b) {
+        return new Distance(a.value * b .value);
+    }
+
+    public static Distance operator * (Distance a, double scale) {
+        return new Distance(a.value * scale);
+    }
+
+    public static Distance operator * (double scale, Distance a) {
+        return new Distance(a.value * scale);
+    }
+
+    public static Distance operator / (Distance a, Distance b) {
+        return new Distance(a.value / b .value);
     }
 
 }
