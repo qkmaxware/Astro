@@ -1,7 +1,8 @@
 name: Test Astro.Remote
 on:
-  release: 
-    types: [ published ]
+  push: 
+    branches: 
+    - "*"
 jobs:
   Windows:
     runs-on: ${{ matrix.os }}
