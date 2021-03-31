@@ -80,9 +80,10 @@ public class IndiDevice {
         // Populate device name, property name, and value
         var message = new IndiNewPropertyMessage(this.Name, name, value);
         // Update local copy
-        this.Properties[name] = value; 
+        // this.Properties[name] = value; 
         // Encode and send
         conn.Send(message);
+        //RefreshProperty(name);
     }
 }   
 

@@ -45,6 +45,11 @@ public class IndiTextValue : IndiValue {
         }
         return node;
     }
+
+    public override string ToString() {
+        return Value.ToString();
+    }
+    
 }
 
 public class IndiNumberValue : IndiValue {
@@ -70,6 +75,10 @@ public class IndiNumberValue : IndiValue {
         }
         return node;
     }
+
+    public override string ToString() {
+        return Value.ToString();
+    }
 }
 
 public class IndiSwitchValue : IndiValue {
@@ -88,6 +97,10 @@ public class IndiSwitchValue : IndiValue {
             node.Add(new XAttribute("label", this.Label));
         }
         return node;
+    }
+
+    public override string ToString() {
+        return this.IsOn ? "On": "Off";
     }
 }
 
@@ -121,6 +134,10 @@ public class IndiBlobValue : IndiValue {
             node.Add(new XAttribute("label", this.Label));
         }
         return node;
+    }
+
+    public override string ToString() {
+        return "[BLOB]";
     }
 }
 
@@ -243,6 +260,16 @@ public static class IndiVectorExtentions {
         for(var i = 0; i < options.Count; i++) {
             options[i].IsOn = i == option;
         }
+    }
+
+    /// <summary>
+    /// Get the first switch with the given name from the vector
+    /// </summary>
+    /// <param name="options">list of possible switch values</param>
+    /// <param name="name">name of the switch</param>
+    /// <returns>switch</returns>
+    public static IndiSwitchValue GetSwitch (this IndiVector<IndiSwitchValue> options, string name) {
+        return options.Where(opt => opt.Name == name).First();
     }
 }
 
