@@ -3,6 +3,24 @@ using System;
 namespace Qkmaxware.Astro.Arithmetic {
 
 /// <summary>
+/// Vector with numeric properties of no specific meaning 
+/// </summary>
+public class Vec3 : Vec3<Real> {
+    public static readonly Vec3 Zero = new Vec3(0,0,0);
+    public static readonly Vec3 One = new Vec3(1,1,1);
+    public static readonly Vec3 I = new Vec3(1,0,0);
+    public static readonly Vec3 J = new Vec3(0,1,0);
+    public static readonly Vec3 K = new Vec3(0,0,1);
+
+    public Vec3() : base(0,0,0) {}
+    public Vec3(Real x, Real y, Real z) : base(x, y, z) {}
+
+    public static Vec3 operator - (Vec3 vec) {
+        return new Vec3(-vec.X.Value,-vec.Y.Value,-vec.Z.Value);
+    }
+}
+
+/// <summary>
 /// Abstract vector of 3 dimensions
 /// </summary>
 /// <typeparam name="T">quantity type for each axis</typeparam>
@@ -84,10 +102,21 @@ public class Vec3<T> where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, ID
     /// <param name="rhs">second vector</param>
     /// <returns>cross product</returns>
     public static Vec3<T> Cross(Vec3<T> lhs, Vec3<T> rhs) {
+        var a2b3 = lhs.Y.Multiply(rhs.Z);
+        var a3b2 = lhs.Z.Multiply(rhs.Y);
+        var a1b3 = lhs.X.Multiply(rhs.Z);
+        var a3b1 = lhs.Z.Multiply(rhs.X);
+        var a1b2 = lhs.X.Multiply(rhs.Y);
+        var a2b1 = lhs.Y.Multiply(rhs.X);
+
+        var i = a2b3.Subtract(a3b2);
+        var j = a3b1.Subtract(a1b3);
+        var k = a1b2.Subtract(a2b1);
+
         return new Vec3<T>(
-            lhs.Y.Multiply(rhs.Z).Subtract(lhs.Z.Multiply(rhs.Y)),
-            lhs.Z.Multiply(rhs.X).Subtract(lhs.X.Multiply(rhs.Z)),
-            lhs.X.Multiply(rhs.Y).Subtract(lhs.Y.Multiply(rhs.Z))
+            i,
+            j,
+            k
         );
     }
     /// <summary>
@@ -228,6 +257,23 @@ public class Vec3<T> where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, ID
             converter(this.Z)
         );
     }
+
+    public override bool Equals(object obj) {
+        if (obj is Vec3<T> vec) {
+            return this.X.Equals(vec.X) && this.Y.Equals(vec.Y) && this.Z.Equals(vec.Z);
+        } else {
+            return base.Equals(obj);
+        }
+    }
+
+    public override int GetHashCode(){
+        return this.X.GetHashCode() ^ this.Y.GetHashCode() ^ this.Z.GetHashCode();
+    }
+
+    public override string ToString() {
+        return $"(x:{X},y:{Y},z:{Z})";
+    }    
+    
 }
 
 }

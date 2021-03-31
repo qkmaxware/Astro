@@ -58,14 +58,11 @@ public class ReferenceFrame {
         }
 
         // Iterate from the end (root) forwards towards the leaf (reference frame)
-        for (var i = 0; i < pathOne.Count && i < pathTwo.Count; i++) {
-            var frameOne = pathOne[pathOne.Count - 1 - i];
-            var frameTwo = pathTwo[pathTwo.Count - 1 - i];
-            if (frameTwo != frameOne) {
-                if (i == 0)
-                    return null;                            // no common frame
-                else
-                    return pathOne[pathOne.Count - 2 - i];  // last frame is the common one
+        for (var i = 0; i < pathOne.Count; i++) {
+            var frameOne = pathOne[i];
+            var idx = pathTwo.IndexOf(frameOne);
+            if (idx >= 0) {
+                return frameOne;
             }
         }
         return null;

@@ -12,6 +12,21 @@ public struct Real : IArithmeticValue<Real> {
         this.Value = value;
     }
 
+    public override bool Equals(object obj) {
+        if (obj is Real real) {
+            return this.Value == real.Value;
+        } else 
+            return base.Equals(obj);
+    }
+
+    public override int GetHashCode(){
+        return Value.GetHashCode();
+    }
+
+    public override string ToString() {
+        return Value.ToString();
+    }
+
     public static implicit operator Real(double value) {
         return new Real(value);
     }
@@ -41,7 +56,7 @@ public struct Real : IArithmeticValue<Real> {
     }
 
     public static Real operator * (Real a, Real b) {
-        return a.Add(b);
+        return a.Multiply(b);
     }
 
     public Real Scale(double scalar) {

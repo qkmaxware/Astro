@@ -103,6 +103,17 @@ public class Mass : IArithmeticValue<Mass> {
 	public Mass Scale(double scale) {
 		return new Mass(this.value * scale);
 	}
+
+    public override bool Equals(object obj) {
+        if (obj is Mass real) {
+            return this.value == real.value;
+        } else 
+            return base.Equals(obj);
+    }
+
+    public override int GetHashCode(){
+        return value.GetHashCode();
+    }
 }
 
 }

@@ -1,7 +1,8 @@
 name: Publish Astro.Remote
 on:
-  release: 
-    types: [ published ]
+  push: 
+    branches: 
+    - "*"
 jobs:
   Windows:
     runs-on: ${{ matrix.os }}
@@ -18,10 +19,13 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.Windows
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
     - name: Compress
       uses: thedoctor0/zip-release@master
@@ -49,16 +53,19 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.macOS
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
         filename: 'release.zip'
-        directory: Astro.Remote.macOS\bin\Release\netcoreapp3.1
+        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
     - name: Upload
       uses: ncipollo/release-action@v1
       with:
@@ -80,16 +87,19 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.Android
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
         filename: 'release.zip'
-        directory: Astro.Remote.macOS\bin\Release\netcoreapp3.1
+        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
     - name: Upload
       uses: ncipollo/release-action@v1
       with:
@@ -111,19 +121,21 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.iOS
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
         filename: 'release.zip'
-        directory: Astro.Remote.iOS\bin\Release\netcoreapp3.1
+        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
     - name: Upload
       uses: ncipollo/release-action@v1
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "release.zip"
-    

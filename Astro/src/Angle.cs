@@ -24,6 +24,11 @@ public class Angle : IArithmeticValue<Angle> {
 	private static double deg2rad =  Math.PI / 180.0;
 	private static double rad2deg = 180.0 / Math.PI;
 
+	/// <summary>
+    /// Static instance representing a zero angle
+    /// </summary>
+    public static readonly Angle Zero = new Angle(0);
+
 	# region Value
 
 	/// <summary>
@@ -273,6 +278,17 @@ public class Angle : IArithmeticValue<Angle> {
 	public Angle Scale(double scale) {
 		return new Angle(this.value * scale);
 	}
+
+	public override bool Equals(object obj) {
+        if (obj is Angle real) {
+            return this.value == real.value;
+        } else 
+            return base.Equals(obj);
+    }
+
+    public override int GetHashCode(){
+        return value.GetHashCode();
+    }
 }
 
 }

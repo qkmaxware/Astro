@@ -27,7 +27,7 @@ public class Speed : IArithmeticValue<Speed> {
     /// <summary>
     /// Total speed in km/hr
     /// </summary>
-    public double TotalKilometresPerHour => TotalMetresPerSecond / (1000 /*m/km*/ * 3600 /*s/hour*/);
+    public double TotalKilometresPerHour => TotalMetresPerSecond / (1000 /*m/km*/ * (1d / 3600d) /*s/hour*/);
 
     private Speed(double value) {
         this.value = value;
@@ -53,7 +53,7 @@ public class Speed : IArithmeticValue<Speed> {
     /// <param name="speed">speed in km/hr</param>
     /// <returns>speed</returns>
     public static Speed KilometresPerHour(double speed) {
-        return new Speed (speed * 1000 /*m/km*/ * 3600 /*s/hour*/);
+        return new Speed (speed * 1000 /*m/km*/ * (1d / 3600d) /*s/hour*/);
     }
 
     public Speed Add(Speed other) {
@@ -92,6 +92,17 @@ public class Speed : IArithmeticValue<Speed> {
 	public Speed Scale(double scale) {
 		return new Speed(this.value * scale);
 	}
+
+    public override bool Equals(object obj) {
+        if (obj is Speed real) {
+            return this.value == real.value;
+        } else 
+            return base.Equals(obj);
+    }
+
+    public override int GetHashCode(){
+        return value.GetHashCode();
+    }
 }
 
 }

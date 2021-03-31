@@ -160,6 +160,16 @@ public class Distance : IArithmeticValue<Distance> {
         return new Distance(a.value / b .value);
     }
 
+    public override bool Equals(object obj) {
+        if (obj is Distance real) {
+            return this.value == real.value;
+        } else 
+            return base.Equals(obj);
+    }
+
+    public override int GetHashCode(){
+        return value.GetHashCode();
+    }
 }
 
 }

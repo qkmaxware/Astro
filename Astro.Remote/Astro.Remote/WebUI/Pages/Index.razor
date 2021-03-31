@@ -48,8 +48,6 @@
 
 }
 
-<LogConsole @ref=logger></LogConsole>
-
 @code {
     private bool reconnect = true;
     private DeviceSetup devices;
@@ -72,16 +70,10 @@
         telescope = null;
     }
 
-    private LogConsole logger;
     private void resetTelescope() {
         if (telescope != null) {
-            try {
-                //telescope.SlewTo(0,0);
-            } catch (Exception e) {
-                logger.Log(e.ToString());
-            }
-        } else {
-        }
+
+        } else {}
     }
 
     private void updateTelescopeProperties() {
