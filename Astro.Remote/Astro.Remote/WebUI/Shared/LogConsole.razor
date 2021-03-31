@@ -1,0 +1,17 @@
+<div class="w3-container w3-black">
+    <ul class="w3-ul">
+    @foreach(var message in Messages) {
+        <li>@message</li>
+    }
+    </ul>
+</div>
+
+@code {
+    private List<string> Messages = new List<string>();
+    
+
+    public void Log(object message) {
+        Messages.Add($"{@DateTime.Now} > {message?.ToString()}");
+        StateHasChanged();
+    }
+}

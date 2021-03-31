@@ -1,0 +1,130 @@
+<div class="dpad w3-padding" style="max-width: 240px; margin: auto;">
+    <div class="w3-row">
+        <div class="w3-col s4">
+            &nbsp;
+        </div>
+        <div class="w3-col s4 border border-up" @onmousedown="(() => up())" @onmouseup="(() => Up())" @onmouseout="(() => Up())" style="border-color: @upColor;">
+            <div style="height: 0; padding-bottom: 100%; position: relative;">
+                <div style="position: absolute; display: flex; justify-content: center; align-content: center; flex-direction: column; left: 0; right: 0; top: 0; bottom: 0;">
+                    <div>
+                        <i class="arrow up"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w3-col s4">
+            &nbsp;
+        </div>
+    </div>
+    <div class="w3-row">
+        <div class="w3-col s4 border border-left" @onmousedown="(() => left())" @onmouseup="(() => Left())" @onmouseout="(() => Left())" style="border-color: @leftColor;">
+            <div style="height: 0; padding-bottom: 100%; position: relative;">
+                <div style="position: absolute; display: flex; justify-content: center; align-content: center; flex-direction: column; left: 0; right: 0; top: 0; bottom: 0;">
+                    <div>
+                        <i class="arrow left"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w3-col s4">
+            <div style="height: 0; padding-bottom: 100%; position: relative;">
+                <div style="position: absolute; display: flex; justify-content: center; align-content: center; flex-direction: column; left: 0; right: 0; top: 0; bottom: 0;">
+                    <div>
+                        <span class="dot"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w3-col s4 border border-right" @onmousedown="(() => right())" @onmouseup="(() => Right())" @onmouseout="(() => Right())" style="border-color: @rightColor;">
+            <div style="height: 0; padding-bottom: 100%; position: relative;">
+                <div style="position: absolute; display: flex; justify-content: center; align-content: center; flex-direction: column; left: 0; right: 0; top: 0; bottom: 0;">
+                    <div>
+                        <i class="arrow right"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="w3-row">
+        <div class="w3-col s4">
+            &nbsp;
+        </div>
+        <div class="w3-col s4 border border-down" @onmousedown="(() => down())" @onmouseup="(() => Down())" @onmouseout="(() => Down())" style="border-color: @downColor;">
+            <div style="height: 0; padding-bottom: 100%; position: relative;">
+                <div style="position: absolute; display: flex; justify-content: center; align-content: center; flex-direction: column; left: 0; right: 0; top: 0; bottom: 0;">
+                    <div>
+                        <i class="arrow down"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="w3-col s4">
+            &nbsp;
+        </div>
+    </div>
+</div>
+
+@code {
+    
+    private float HorizontalAxis => (InvertX ? -1 : 1) * ( (leftPressed ? -1 : 0) + (rightPressed ? 1 : 0) );
+    private float VerticalAxis => (InvertY ? -1 : 1) * ( (upPressed ? 1 : 0) + (downPressed ? -1 : 0) );
+
+    [Parameter]
+    public Action<float, float> OnDirectionChange {get; set;}
+    [Parameter]
+    public bool InvertY {get; set;}
+    [Parameter]
+    public bool InvertX {get; set;}
+
+    private bool upPressed = false;
+    private string upColor => upPressed ? "darkorange" : "white";
+    private void up() {
+        upPressed = true;
+        OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+    }
+    private void Up() {
+        if (upPressed) {
+            upPressed = false;
+            OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+        }
+    }
+
+    private bool downPressed = false;
+    private string downColor => downPressed ? "darkorange" : "white";
+    private void down() {
+        downPressed = true;
+        OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+    }
+    private void Down() {
+        if (downPressed) {
+            downPressed = false;
+            OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+        }
+    }
+
+    private bool leftPressed = false;
+    private string leftColor => leftPressed ? "darkorange" : "white";
+    private void left() {
+        leftPressed = true;
+        OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+    }
+    private void Left() {
+        if (leftPressed) {
+            leftPressed = false;
+            OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+        }
+    }
+
+    private bool rightPressed = false;
+    private string rightColor => rightPressed ? "darkorange" : "white";
+    private void right() {
+        rightPressed = true;
+        OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+    }
+    private void Right() {
+        if (rightPressed) {
+            rightPressed = false;
+            OnDirectionChange?.Invoke(HorizontalAxis, VerticalAxis);
+        }
+    }
+}

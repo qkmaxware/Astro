@@ -1,0 +1,72 @@
+.dpad {
+    text-align: center;
+}
+
+.dpad .arrow {
+    border-style: solid; 
+    border-color: white;
+    border-width: 0 3px 3px 0;
+    display: inline-block;
+    padding: 3px;
+}
+
+.dpad .border {
+    border-style: solid;
+    border-color: white;
+}
+
+.dpad .border-up {
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-bottom-width: 0;
+}
+
+.dpad .border-down {
+    border-bottom-width: 1px;
+    border-left-width: 1px;
+    border-right-width: 1px;
+    border-top-width: 0;
+}
+
+.dpad .border-left {
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+    border-right-width: 0;
+}
+
+.dpad .border-right {
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+    border-right-width: 1px;
+    border-left-width: 0;
+}
+
+.dpad .dot {
+    height: 6px;
+    width: 6px;
+    background-color: white;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dpad .right {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg);
+}
+
+.dpad .left {
+    transform: rotate(135deg);
+    -webkit-transform: rotate(135deg);
+}
+
+.dpad .up {
+    transform: rotate(-135deg);
+    -webkit-transform: rotate(-135deg);
+}
+
+.dpad .down {
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+}

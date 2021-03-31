@@ -1,0 +1,74 @@
+@inject IndiConnectionManager IndiConnectionManager;
+
+<div class="w3-container">
+    <Notification @ref=notification/>
+    
+    <label>IP Address</label>
+    <input class="w3-dark-grey w3-input" placeholder="ip address" type=text @bind=host/>
+    <label>Port</label>
+    <input class="w3-dark-grey w3-input" placeholder="port" type=number @bind=port/>
+
+    <div class="w3-center w3-padding">
+        @if(IndiConnectionManager.IsConnected()) {
+        <button class="w3-button w3-block w3-red" @onclick=disconnect>
+            Disconnect
+        </button>  
+        } else {
+        <button class="w3-button w3-block w3-green" @onclick=connect>
+            Connect
+        </button>
+        }
+    </div>
+</div>
+
+@code {
+    private string host = "localhost";
+    private int port = 7624;
+    [Parameter] public Action OnBeforeConnect {get; set;}
+    [Parameter] public Action OnBeforeRefresh {get; set;}
+    [Parameter] public Action OnAfterRefresh {get; set;}
+    [Parameter] public Action OnAfterConnect {get; set;}
+
+    private Notification notification;
+
+    protected override void OnInitialized() {
+        loadConnection();
+        StateHasChanged();
+    }
+
+    private void loadConnection() {
+        var config = AppDirectories.LoadFile("connection.last");
+        if (config != null) {
+            using (var reader = new System.IO.StringReader(config)) {
+                this.host = reader.ReadLine();
+                if (int.TryParse(reader.ReadLine(), out this.port)) {}
+            }
+        }
+    }
+
+    private void saveConnection() {
+        using (var writer = AppDirectories.CreateFile("connection.last")) {
+            writer.WriteLine(host);
+            writer.WriteLine(port);
+        }
+    }
+
+    private void connect() {
+        if (OnBeforeConnect != null) {
+            OnBeforeConnect();
+        }
+        if (!IndiConnectionManager.Connect(host, port, OnBeforeRefresh, OnAfterRefresh)) {
+            notification.Show("Failed to connect", $"The INDI client has failed to connect to {host}:{port}");
+        } else {
+            notification.Hide();
+            saveConnection();
+            if (OnAfterConnect != null) {
+                OnAfterConnect();
+            }
+        }
+    }
+
+    private void disconnect() {
+        IndiConnectionManager.Disconnect();
+    }
+}

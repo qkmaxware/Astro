@@ -1,0 +1,23 @@
+<div class="w3-panel w3-red @showCss">
+    <h3>@title</h3>
+    <p>@details</p>
+</div> 
+
+@code {
+    private bool show = false;
+    private string showCss => show ? "w3-show" : "w3-hide";
+    private string title;
+    private string details;
+
+    public void Show(string title, string details) {
+        this.title = title;
+        this.details = details;
+        this.show = true;
+        StateHasChanged();
+    }
+
+    public void Hide() {
+        this.show = false;
+        StateHasChanged();
+    }
+}

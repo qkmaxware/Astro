@@ -1,0 +1,89 @@
+name: Test Astro.Remote
+on:
+  release: 
+    types: [ published ]
+jobs:
+  Windows:
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      fail-fast: false
+      matrix: 
+        os: [ windows-latest ]
+        dotnet: [ '3.1.x' ]
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@master
+    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '${{ matrix.dotnet }}'
+    - name: Build
+      run: |
+        cd Astro.Remote
+        dotnet restore
+        cd Astro.Remote.Windows
+        dotnet publish -c Release
+
+  MacOS:
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      fail-fast: false
+      matrix: 
+        os: [ macos-latest ]
+        dotnet: [ '3.1.x' ]
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@master
+    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '${{ matrix.dotnet }}'
+    - name: Build
+      run: |
+        cd Astro.Remote
+        dotnet restore
+        cd Astro.Remote.macOS
+        dotnet publish -c Release
+
+  Android:
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      fail-fast: false
+      matrix: 
+        os: [ macos-latest ]
+        dotnet: [ '3.1.x' ]
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@master
+    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '${{ matrix.dotnet }}'
+    - name: Build
+      run: |
+        cd Astro.Remote
+        dotnet restore
+        cd Astro.Remote.Android
+        dotnet publish -c Release
+
+  IOS:
+    runs-on: ${{ matrix.os }}
+    strategy: 
+      fail-fast: false
+      matrix: 
+        os: [ macos-latest ]
+        dotnet: [ '3.1.x' ]
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@master
+    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '${{ matrix.dotnet }}'
+    - name: Build
+      run: |
+        cd Astro.Remote
+        dotnet restore
+        cd Astro.Remote.iOS
+        dotnet publish -c Release
+    

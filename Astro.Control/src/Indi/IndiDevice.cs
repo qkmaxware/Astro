@@ -13,7 +13,7 @@ using System.Collections;
 namespace Qkmaxware.Astro.Control {
 
 public class IndiPropertiesContainer : IEnumerable<KeyValuePair<string, IndiValue>>{
-    private Dictionary<string, IndiValue> properties = new Dictionary<string, IndiValue>();
+    private ConcurrentDictionary<string, IndiValue> properties = new ConcurrentDictionary<string, IndiValue>();
 
     public IndiPropertiesContainer() {}
 
@@ -26,7 +26,8 @@ public class IndiPropertiesContainer : IEnumerable<KeyValuePair<string, IndiValu
     }
 
     public void Delete(string property) {
-        this.properties.Remove(property);
+        IndiValue old;
+        this.properties.TryRemove(property, out old);
     }
 
     public IEnumerator<KeyValuePair<string, IndiValue>> GetEnumerator() {

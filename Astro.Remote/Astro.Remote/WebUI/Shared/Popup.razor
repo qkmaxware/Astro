@@ -1,0 +1,26 @@
+<div class="w3-modal @css">
+    <div class="w3-modal-content w3-dark-gray w3-card w3-round" style="max-height: 80vh; overflow-y: auto;">
+        <div>
+            <span @onclick=Hide class="w3-button w3-display-topright">&times;</span>
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool show = false;
+    private string css => show ? "w3-show" : "w3-hide";
+
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    public void Show() {
+        this.show = true;
+        StateHasChanged();
+    }
+
+    public void Hide() {
+        this.show = false;
+        StateHasChanged();
+    }
+}

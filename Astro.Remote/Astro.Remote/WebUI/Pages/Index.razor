@@ -1,0 +1,125 @@
+﻿@page "/"
+@using System.Collections;
+@inject IndiConnectionManager IndiConnectionManager;
+
+@if (reconnect) {
+
+<DeviceSetup @ref=devices />
+
+<div class="w3-container w3-padding">
+    <button class="w3-right w3-button w3-blue" @onclick=confirm>Next &#x203A;</button>
+</div>
+
+} else {
+
+<div style="width: 80vw; margin: 4px auto; overflow-x: auto; overflow-y: hidden;">
+    <div class="w3-bar w3-round w3-dark-grey">
+        <button class="w3-button w3-bar-item" @onclick=disconnect title="disconnect">
+            <img src="/assets/disconnect.svg" width=32 height=32>
+        </button>
+        <button class="w3-button w3-bar-item" @onclick=resetTelescope title="reset">
+            <img src="/assets/reset.svg" width=32 height=32>
+        </button>
+        <button class="w3-button w3-bar-item" @onclick=updateTelescopeProperties title="refresh properties">
+            <img src="/assets/updateProperties.svg" width=32 height=32>
+        </button>
+        <button class="w3-button w3-bar-item" @onclick=viewTelescopeProperties title="view properties">
+            <img src="/assets/viewProperties.svg" width=32 height=32>
+        </button>
+        <div class="w3-dropdown-hover w3-dropdown-click">
+            <button class="w3-button" title="speed">
+                <img src="/assets/speed.svg" width=32 height=32>
+            </button>
+            <div class="w3-dropdown-content w3-bar-block w3-card-4">
+                <button class="w3-bar-item w3-button" @onclick=@(() => telescopeSetSpeed(SlewRate.Guide))>Guide (slowest)</button>
+                <button class="w3-bar-item w3-button" @onclick=@(() => telescopeSetSpeed(SlewRate.Centering))>Centering (slow)</button>
+                <button class="w3-bar-item w3-button" @onclick=@(() => telescopeSetSpeed(SlewRate.Find))>Find (medium)</button>
+                <button class="w3-bar-item w3-button" @onclick=@(() => telescopeSetSpeed(SlewRate.Max))>Max (max)</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<Dpad OnDirectionChange=steer InvertY=true/>
+
+<Popup @ref=popup>
+    <PropertyDrawer @ref=drawer/>
+</Popup>
+
+}
+
+<LogConsole @ref=logger></LogConsole>
+
+@code {
+    private bool reconnect = true;
+    private DeviceSetup devices;
+    private IndiTelescopeController telescope;
+    private Popup popup;
+    private PropertyDrawer drawer;
+
+    private void confirm() {
+        if (IndiConnectionManager.IsConnected() && devices.SelectedMount != null) {
+            reconnect = false;
+            telescope = new IndiTelescopeController(devices.SelectedMount);
+            telescope.Connect();
+        }
+    }
+
+    private void disconnect() {
+        telescope.Disconnect();
+        IndiConnectionManager.Disconnect();
+        reconnect = true;
+        telescope = null;
+    }
+
+    private LogConsole logger;
+    private void resetTelescope() {
+        if (telescope != null) {
+            try {
+                //telescope.SlewTo(0,0);
+            } catch (Exception e) {
+                logger.Log(e.ToString());
+            }
+        } else {
+        }
+    }
+
+    private void updateTelescopeProperties() {
+        if (telescope != null) {
+            telescope.RefreshProperties();
+        }
+    }
+    private void viewTelescopeProperties() {
+        this.drawer.Clear();
+        this.drawer.Update(devices.SelectedMount.Properties);
+        this.popup.Show();
+    }
+
+    private void telescopeSetSpeed(SlewRate rate) {
+        if (telescope != null) {
+            telescope.SetSlewRate(rate);
+        }
+    }
+
+    private void steer(float x, float y) {
+        if (x == 0 && y == 0) {
+            telescope.Rotate(Direction.None);
+        } else if (x == 0 && y > 0) {
+            telescope.Rotate(Direction.North);
+        } else if (x == 0 && y < 0) {
+            telescope.Rotate(Direction.South);
+        } else if (x < 0 && y == 0) {
+            telescope.Rotate(Direction.West);
+        } else if (x > 0 && y == 0) {
+            telescope.Rotate(Direction.East);
+        } else if (x < 0 && y > 0) {
+            telescope.Rotate(Direction.NorthEast);
+        } else if (x > 0 && y > 0) {
+            telescope.Rotate(Direction.NorthWest);
+        } else if (x < 0 && y < 0) {
+            telescope.Rotate(Direction.SouthEast);
+        } else if (x > 0 && y < 0) {
+            telescope.Rotate(Direction.SouthWest);
+        }
+    }
+}

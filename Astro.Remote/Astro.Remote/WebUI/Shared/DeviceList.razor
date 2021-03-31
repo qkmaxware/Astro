@@ -1,0 +1,46 @@
+@using System.Collections;
+@using System.Linq;
+@using Qkmaxware.Astro.Control;
+@implements IIndiListener;
+@inject IndiConnectionManager IndiConnectionManager;
+
+<div>
+    <ul class="w3-ul">
+    @foreach (var device in IndiConnectionManager.Devices()) {
+        <li @onclick="@(() => SelectedDevice = device)" class="@(SelectedDevice == device ? "w3-grey" : string.Empty)">
+            <button title="refresh properties" class="w3-grey w3-button" @onclick="(() => { device.RefreshProperties(); })">
+                <img src="/assets/updateProperties.svg" width=16 height=16>
+            </button>
+            <button title="view properties" class="w3-grey w3-button" @onclick="(() => { drawer.Update(device.Properties); popup?.Show(); })">
+                <img src="/assets/viewProperties.svg" width=16 height=16>
+            </button>
+            <span class="w3-padding">
+                @device.Name
+            </span>
+        </li>
+    }
+    </ul>
+</div>
+
+<Popup @ref=popup>
+    <PropertyDrawer @ref=drawer/>
+</Popup>
+
+@code {
+
+    public IndiDevice SelectedDevice {get; private set;}
+
+    private Popup popup;
+    private PropertyDrawer drawer;
+    public void OnConnect(IndiServer server) {}
+    public void OnDisconnect(IndiServer server) {}
+    public void OnMessageSent(IndiClientMessage message) {}
+    public void OnMessageReceived(IndiDeviceMessage message) {}
+    public void OnAddDevice(IndiDevice device) {
+        InvokeAsync(StateHasChanged);
+    }
+    public  void OnRemoveDevice(IndiDevice device) {
+        InvokeAsync(StateHasChanged);
+    }
+
+}
