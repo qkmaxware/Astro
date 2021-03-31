@@ -19,10 +19,13 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.Windows
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
 
   MacOS:
@@ -40,10 +43,13 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.macOS
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
 
   Android:
@@ -61,10 +67,13 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.Android
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
 
   IOS:
@@ -82,9 +91,12 @@ jobs:
       with:
         dotnet-version: '${{ matrix.dotnet }}'
     - name: Build
+      env: 
+        GITHUB_USERNAME: qkmaxware
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         cd Astro.Remote
-        dotnet restore
         cd Astro.Remote.iOS
+        dotnet restore --configfile "..\..\nuget.config"
         dotnet publish -c Release
     
