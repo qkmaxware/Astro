@@ -1,0 +1,26 @@
+name: Test Website
+on:
+  push: 
+    branches: 
+    - "*"
+jobs:
+  deploy:
+    name: Deploy Github Pages
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+    
+      - name: Setup Chocolatey
+        shell: powershell
+        run: Set-ExecutionPolicy Bypass -Scope Process -Force; iwr https://chocolatey.org/install.ps1 -UseBasicParsing | iex
+
+      - name: Setup DocFX
+        shell: powershell
+        run: choco install docfx -y
+
+      - name: Build
+        shell: powershell
+        run: |
+          docfx metadata docs/docfx.json
+          docfx build docs/docfx.json -o . 
