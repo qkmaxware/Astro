@@ -79,7 +79,7 @@ public class Quat {
         }
     }
 
-    // <summary>
+    /// <summary>
     /// Quaternion vector with the absolute value of all components
     /// </summary>
     public Quat Abs => new Quat(System.Math.Abs(X), System.Math.Abs(Y), System.Math.Abs(Z), System.Math.Abs(W));

@@ -14,10 +14,11 @@ public class AngleJsonConverter : QuantityJsonConverter<Angle> {
     public override double GetQuantity(Angle value) => value.TotalDegrees;
 }
 	
+
+[JsonConverter(typeof(AngleJsonConverter))]
 /// </summary>
 /// Angluar measurement
 /// </summary>
-[JsonConverter(typeof(AngleJsonConverter))]
 public class Angle : IArithmeticValue<Angle> {
 	private double value; // internally stored as degrees
 	private double magnitude => Math.Abs(value);
