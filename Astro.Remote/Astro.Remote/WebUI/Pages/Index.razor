@@ -49,7 +49,7 @@
     <PropertyDrawer @ref=drawer/>
 </Popup>
 
-<LocationPicker @ref=location></LocationPicker>
+<LocationPicker @ref=location OnLocationChanged=telescopeSetPosition></LocationPicker>
 
 }
 
@@ -107,6 +107,18 @@
             } catch (Exception e) {
                 dialog.Show("Error", e.Message);
             }
+        }
+    }
+
+    private void telescopeSetPosition(double lat, double lon, double alt) {
+        try {
+            if (telescope != null) {
+                telescope.SetLocation(lat, lon, alt);
+            } else {
+                throw new Exception("No telescope");
+            }
+        } catch (Exception e) {
+            dialog.Show("Error", e.Message);
         }
     }
 

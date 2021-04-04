@@ -18,8 +18,8 @@ public class OrbitalElementsTest {
             Angle.Degrees(100.46435)
         );
 
-        //earthJ2000.EccentricAnomaly;
-        //earthJ2000.TrueAnomaly;
+        Assert.AreEqual(101.403, earthJ2000.EccentricAnomaly.TotalDegrees, 0.001);
+        Assert.AreEqual(102.34003,earthJ2000.TrueAnomaly.TotalDegrees, 0.001);
     }
 }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 
 namespace Qkmaxware.Astro.Control {
@@ -127,6 +128,14 @@ public class IndiTelescopeController {
 
     public void Goto(double alt, double az) {
         throw new System.NotImplementedException();
+    }
+
+    public void SetLocation(double lat, double lon, double alt) {
+        var vector = getProp<IndiVector<IndiNumberValue>>(IndiStandardProperties.GeographicCoordinate);
+        vector.GetItemWithName("LAT").Value = lat;
+        vector.GetItemWithName("LONG").Value = lon;
+        vector.GetItemWithName("ELEV").Value = Math.Max(0, alt);
+        device.ChangeRemoteProperty(vector.Name, vector);
     }
 
     public void SetSlewRate(SlewRate rate) {

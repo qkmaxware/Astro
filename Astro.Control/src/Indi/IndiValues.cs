@@ -295,7 +295,7 @@ public class IndiVector<T> : UpdatableIndiValue, IList<T> where T:IndiValue {
     /// </summary>
     /// <param name="name">name of element</param>
     /// <returns>element or null</returns>
-    public T WithName(string name) {
+    public T GetItemWithName(string name) {
         return this.vector.Where(value => value.Name == name).FirstOrDefault();
     }
 

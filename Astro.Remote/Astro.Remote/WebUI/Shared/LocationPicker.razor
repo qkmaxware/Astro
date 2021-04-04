@@ -40,7 +40,7 @@
     private double savedAlt;
 
     [Parameter]
-    public Action OnLocationChanged {get; set;}
+    public Action<double, double, double> OnLocationChanged {get; set;}
 
     private Dialog dialog;
     private Popup popup;
@@ -79,7 +79,7 @@
         savedLat = lat;
         savedLon = lon;
         savedAlt = alt;
-        OnLocationChanged?.Invoke();
+        OnLocationChanged?.Invoke(savedLat, savedLon, savedAlt);
         Hide();
     }
 }
