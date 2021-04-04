@@ -47,13 +47,15 @@ public class PhysicsEntity : ReferenceFrame {
         Quat toRoot = Quat.Identity;
         Quat fromRoot = Quat.Identity;
 
-        ReferenceFrame path = this;
+        ReferenceFrame? path = this;
         while (path != root && path != null) {
             toRoot = path.Rotation * toRoot;
+            path = path.ParentReferenceFrame;
         }
         path = frame;
         while (path != root && path != null) {
             fromRoot = path.Rotation * fromRoot;
+            path = path.ParentReferenceFrame;
         }
 
         return (fromRoot.Conjugate * toRoot) * this.Velocity;

@@ -13,27 +13,70 @@ using System.Collections;
 
 namespace Qkmaxware.Astro.Control {
 
+/// <summary>
+/// Base class for all INDI values
+/// </summary>
 public abstract class IndiValue {
+    /// <summary>
+    /// Value name
+    /// </summary>
     public string Name;
+    /// <summary>
+    /// Value label
+    /// </summary>
     public string Label;
+    /// <summary>
+    /// Name of the type according to INDI protocol design specifications
+    /// </summary>
+    /// <value></value>
     public abstract string IndiTypeName {get;}
     internal abstract XElement CreateElement(string prefix, string subPrefix);
+    /// <summary>
+    /// Create XML element to send a New Message
+    /// </summary>
+    /// <returns>xml</returns>
     public XElement CreateNewElement() {
         return CreateElement("new", "one");
     }
+    
+    /// <summary>
+    /// Create XML element to send a Set Message
+    /// </summary>
+    /// <returns>xml</returns>
     public XElement CreateSetElement() {
         return CreateElement("set", "one");
     }
+
+    /// <summary>
+    /// Create XML element to send a Def Message
+    /// </summary>
+    /// <returns>xml</returns>
     public XElement CreateDefinitionElement() {
         return CreateElement("def", "def");
     }
 }
 
+/// <summary>
+/// Base class for INDI values whose values can be updated from other values
+/// </summary>
 public abstract class UpdatableIndiValue : IndiValue {
+    /// <summary>
+    /// Try to update this value from another value
+    /// </summary>
+    /// <param name="value">value to copy</param>
+    /// <returns>true if update was successful</returns>
     public abstract bool TryUpdateValue(IndiValue value);
 }
 
+/// <summary>
+/// Base class for INDI values that encapsulate a primitive type
+/// </summary>
+/// <typeparam name="T">primitive type</typeparam>
 public abstract class IndiValue<T> : UpdatableIndiValue {
+    /// <summary>
+    /// Stored primitive type
+    /// </summary>
+    /// <value>value</value>
     public virtual T Value { get; set; }
 
     public override bool TryUpdateValue(IndiValue from) {
@@ -49,6 +92,9 @@ public abstract class IndiValue<T> : UpdatableIndiValue {
     }
 }
 
+/// <summary>
+/// INDI text value
+/// </summary>
 public class IndiTextValue : IndiValue<string> {
     public override string IndiTypeName => "Text";
     internal override XElement CreateElement(string prefix, string subPrefix) {
@@ -71,6 +117,9 @@ public class IndiTextValue : IndiValue<string> {
     
 }
 
+/// <summary>
+/// INDI numeric value
+/// </summary>
 public class IndiNumberValue : IndiValue<double> {
     public double Min;
     public double Max;
@@ -99,6 +148,9 @@ public class IndiNumberValue : IndiValue<double> {
     }
 }
 
+/// <summary>
+/// INDI switch 
+/// </summary>
 public class IndiSwitchValue : IndiValue<bool> {
     public string Switch;
     public bool IsOn => Value == true;
@@ -122,6 +174,9 @@ public class IndiSwitchValue : IndiValue<bool> {
     }
 }
 
+/// <summary>
+/// INDI light
+/// </summary>
 public class IndiLightValue : IndiValue {
     public override string IndiTypeName => "Light";
     internal override XElement CreateElement(string prefix, string subPrefix) {
@@ -129,6 +184,9 @@ public class IndiLightValue : IndiValue {
     }
 }
 
+/// <summary>
+/// INDI BLOB value
+/// </summary>
 public class IndiBlobValue : IndiValue<string> {
     public byte[] Blob => System.Text.Encoding.ASCII.GetBytes(this.Value);
     public override string IndiTypeName => "BLOB";
@@ -158,73 +216,169 @@ public class IndiBlobValue : IndiValue<string> {
     }
 }
 
+/// <summary>
+/// Vector containing other INDI values
+/// </summary>
+/// <typeparam name="T">INDI value type</typeparam>
 public class IndiVector<T> : UpdatableIndiValue, IList<T> where T:IndiValue {
-
+    /// <summary>
+    /// Group associated with the vector
+    /// </summary>
     public string Group;
+    /// <summary>
+    /// State of the vector
+    /// </summary>
     public string State;
+    /// <summary>
+    /// Permissions for this vector
+    /// </summary>
     public string Permissions = "rw";
+    /// <summary>
+    /// Check if this vector is read only
+    /// </summary>
     public bool IsReadOnly => Permissions == "r";
+    /// <summary>
+    /// Check if this vector is readable and writeable
+    /// </summary>
     public bool IsReadWrite => Permissions == "rw";
+    /// <summary>
+    /// Check if this vector is writable
+    /// </summary>
     public bool IsWritable => Permissions.Contains("w");
+    /// <summary>
+    /// Rule associated with this vector
+    /// </summary>
     public string Rule;
+    /// <summary>
+    /// Timeout on this vector's data
+    /// </summary>
     public string Timeout;
+    /// <summary>
+    /// Last timestamp
+    /// </summary>
     public string Timestamp;
+    /// <summary>
+    /// Vector comments
+    /// </summary>
     public string Comment;
 
     private List<T> vector = new List<T>();
 
+    /// <summary>
+    /// Get a value from the vector
+    /// </summary>
+    /// <value>INDI value</value>
     public T this[int index] { 
         get => vector[index]; 
         set { if(IsWritable) { vector[index] = value; } }
-    }
+    }   
 
+    /// <summary>
+    /// Number of elements in the vector
+    /// </summary>
     public int Count => vector.Count;
 
+    /// <summary>
+    /// Create an empty vector
+    /// </summary>
     public IndiVector () {}
+    /// <summary>
+    /// Create an empty vector with the given property name
+    /// </summary>
+    /// <param name="name">property name</param>
     public IndiVector (string name) {
         this.Name = name;
     }
 
+    /// <summary>
+    /// Get value in vector with the given identifier
+    /// </summary>
+    /// <param name="name">name of element</param>
+    /// <returns>element or null</returns>
     public T WithName(string name) {
         return this.vector.Where(value => value.Name == name).FirstOrDefault();
     }
 
+    /// <summary>
+    /// add a value to the vector
+    /// </summary>
+    /// <param name="item">value to add</param>
     public void Add(T item) {
         vector.Add(item);
     }
 
+    /// <summary>
+    /// Clear all values
+    /// </summary>
     public void Clear() {
         vector.Clear();
     }
 
+    /// <summary>
+    /// Check if vector contains the given value
+    /// </summary>
+    /// <param name="item">item to check</param>
+    /// <returns>true if vector contains the given value</returns>
     public bool Contains(T item) {
         return vector.Contains(item);
     }
 
+    /// <summary>
+    /// Copy vector values to array
+    /// </summary>
+    /// <param name="array">array to copy to</param>
+    /// <param name="arrayIndex">index to copy at</param>
     public void CopyTo(T[] array, int arrayIndex) {
         vector.CopyTo(array, arrayIndex);
     }
 
+    /// <summary>
+    /// Get enumerator for this vector
+    /// </summary>
+    /// <returns>vector enumerator</returns>
     public IEnumerator<T> GetEnumerator() {
         return vector.GetEnumerator();
     }
 
+    /// <summary>
+    /// Get the index of an item in this vector
+    /// </summary>
+    /// <param name="item">item</param>
+    /// <returns>index of item if it exists in the vector -1 otherwise</returns>
     public int IndexOf(T item) {
         return vector.IndexOf(item);
     }
 
+    /// <summary>
+    /// Insert an item into this vector at the given index
+    /// </summary>
+    /// <param name="index">index to insert at</param>
+    /// <param name="item">item to insert</param>
     public void Insert(int index, T item) {
         vector.Insert(index, item);
     }
 
+    /// <summary>
+    /// Remove an item from the vector
+    /// </summary>
+    /// <param name="item">item to remove</param>
+    /// <returns>true if item was removed successfully</returns>
     public bool Remove(T item) {
         return vector.Remove(item);
     }
 
+    /// <summary>
+    /// Remove an item at the given position
+    /// </summary>
+    /// <param name="index">index to remove</param>
     public void RemoveAt(int index) {
         vector.RemoveAt(index);
     }
 
+    /// <summary>
+    /// Get enumerator for this vector
+    /// </summary>
+    /// <returns>vector enumerator</returns>
     IEnumerator IEnumerable.GetEnumerator() {
         return vector.GetEnumerator();
     }

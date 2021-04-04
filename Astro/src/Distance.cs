@@ -74,6 +74,16 @@ public class Distance : IArithmeticValue<Distance> {
     public static Distance Kilometres(double value) {
         return new Distance(value);
     }
+
+    /// <summary>
+    /// Create a distance in Astronomical Units (AU)
+    /// </summary>
+    /// <param name="value">au</param>
+    /// <returns>distance</returns>
+    public static Distance AU(double value) {
+        return new Distance(value * 149598073);
+    }
+
     /// <summary>
     /// Create a distance in light years
     /// </summary>

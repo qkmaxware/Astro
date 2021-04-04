@@ -85,6 +85,38 @@ public class ReferenceFrame {
     }
 
     /// <summary>
+    /// Covert a position within this frame of reference to a position within another frame
+    /// </summary>
+    /// <param name="position">position in local space</param>
+    /// <param name="frame">other frame</param>
+    /// <returns>position in other frame</returns>
+    public Vec3<Distance> LocalToPositionInFrame(Vec3<Distance> position, ReferenceFrame frame) {
+        var root = FindSharedParent(this, frame); // will always share the "null" frame at least
+
+        // Get position in "parent" frame
+        var parent = this;
+        while (parent != root && parent != null) {
+            position = position.Rotate(parent.Rotation) + parent.Position;
+            parent = parent.ParentReferenceFrame;
+        }
+
+        // Get position in "other" frame
+        List<ReferenceFrame> reversePath = new List<ReferenceFrame>();
+        parent = frame;
+        while (parent != root && parent != null) {
+            reversePath.Add(parent);
+            parent = parent.ParentReferenceFrame;
+        }
+
+        for (var i = 0; i < reversePath.Count; i++) {
+            var current = reversePath[reversePath.Count - 1 - i];
+            position = position.Rotate(current.Rotation.Conjugate) - current.Position;
+        }
+
+        return position;
+    }
+
+    /// <summary>
     /// Convert a position within this frame of reference to a position in "global" space
     /// </summary>
     /// <param name="local">position within this frame</param>
@@ -96,6 +128,7 @@ public class ReferenceFrame {
         var parent = this;
         while (parent != null) {
             position = position.Rotate(parent.Rotation) + parent.Position;
+            parent = parent.ParentReferenceFrame;
         }
         return position;
     }
@@ -131,29 +164,10 @@ public class ReferenceFrame {
     /// <param name="frame">other frame of reference</param>
     /// <returns>position relative to the input frame</returns>
     public Vec3<Distance> GetPositionRelativeTo(ReferenceFrame frame) {
-        var root = FindSharedParent(this, frame); // will always share the "null" frame at least
-        var position = this.Position;
-
-        // Get position in "parent" frame
-        var parent = this.ParentReferenceFrame;
-        while (parent != root && parent != null) {
-            position = position.Rotate(parent.Rotation) + parent.Position;
-        }
-
-        // Get position in "other" frame
-        List<ReferenceFrame> reversePath = new List<ReferenceFrame>();
-        parent = this;
-        while (parent != root && parent != null) {
-            reversePath.Add(parent);
-            parent = parent.ParentReferenceFrame;
-        }
-
-        for (var i = 0; i < reversePath.Count; i++) {
-            var current = reversePath[reversePath.Count - 1 - i];
-            position = position.Rotate(current.Rotation.Conjugate) - current.Position;
-        }
-
-        return position;
+        return LocalToPositionInFrame(
+            new Vec3<Distance>(Distance.Zero, Distance.Zero, Distance.Zero),
+            frame
+        );
     }
 }
 

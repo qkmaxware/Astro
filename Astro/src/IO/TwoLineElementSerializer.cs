@@ -6,6 +6,9 @@ using Qkmaxware.Astro.Query;
 
 namespace Qkmaxware.Astro.IO {
 
+/// <summary>
+/// Class for deserializing entities from two line element sets
+/// </summary>
 public class TwoLineElementDeserializer {
 
     /// <summary>

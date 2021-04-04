@@ -11,16 +11,50 @@ using System.Collections.Generic;
 
 namespace Qkmaxware.Astro.Control {
 
+/// <summary>
+/// Messages from the device to the client
+/// </summary>
 public abstract class IndiDeviceMessage {
+    /// <summary>
+    /// Action to perform when the message is received
+    /// </summary>
+    /// <param name="connection">connection the message was received over</param>
     public abstract void Process(IndiConnection connection);
+    /// <summary>
+    /// Encode this message to XML
+    /// </summary>
+    /// <returns>XML string</returns>
     public abstract string EncodeXml();
 }
 
+/// <summary>
+/// Set a property on the client
+/// </summary>
 public class IndiSetPropertyMessage : IndiDeviceMessage {
+    /// <summary>
+    /// Device name
+    /// </summary>
     public string DeviceName;
+    /// <summary>
+    /// Property name
+    /// </summary>
     public string PropertyName;
+    /// <summary>
+    /// New property value
+    /// </summary>
     public IndiValue PropertyValue;
+    /// <summary>
+    /// Set the given property on all devices
+    /// </summary>
+    /// <param name="property">property name</param>
+    /// <param name="value">new value</param>
     public IndiSetPropertyMessage(string property, IndiValue value) : this(null, property, value) {}
+    /// <summary>
+    /// Set the given property on the specific device
+    /// </summary>
+    /// <param name="device">device name</param>
+    /// <param name="property">property name</param>
+    /// <param name="value">new value</param>
     public IndiSetPropertyMessage(string device, string property, IndiValue value) {
         this.DeviceName = device;
         this.PropertyName = property;
@@ -66,10 +100,28 @@ public class IndiSetPropertyMessage : IndiDeviceMessage {
     }
 }
 
+/// <summary>
+/// Define the given property on the client
+/// </summary>
 public class IndiDefinePropertyMessage : IndiDeviceMessage {
+    /// <summary>
+    /// Device name
+    /// </summary>
     public string DeviceName;
+    /// <summary>
+    /// Property name
+    /// </summary>
     public string PropertyName;
+    /// <summary>
+    /// New property value
+    /// </summary>
     public IndiValue PropertyValue;
+    /// <summary>
+    /// Define a new property for the given device
+    /// </summary>
+    /// <param name="device">device name</param>
+    /// <param name="prop">property name</param>
+    /// <param name="value">default value</param>
     public IndiDefinePropertyMessage(string device, string prop, IndiValue value) {
         this.DeviceName = device;
         this.PropertyName = prop;
@@ -94,12 +146,38 @@ public class IndiDefinePropertyMessage : IndiDeviceMessage {
     }
 }
 
+/// <summary>
+/// Delete a given property
+/// </summary>
 public class IndiDeletePropertyMessage : IndiDeviceMessage {
+    /// <summary>
+    /// Device name
+    /// </summary>
     public string DeviceName;
+    /// <summary>
+    /// Property name
+    /// </summary>
     public string PropertyName;
+    /// <summary>
+    /// Check if all properties are to be deleted
+    /// </summary>
+    /// <returns>true if this message is designed to delete all properties</returns>
     public bool DeleteAllProperties => string.IsNullOrEmpty(PropertyName);
+    /// <summary>
+    /// Timestamp
+    /// </summary>
     public string Timestamp;
+    /// <summary>
+    /// Notice attached to deletion
+    /// </summary>
     public string Message;
+    /// <summary>
+    /// Delete the given property for the device
+    /// </summary>
+    /// <param name="device">device name to delete from</param>
+    /// <param name="prop">property name (or empty for all properties)</param>
+    /// <param name="timestamp">timestamp</param>
+    /// <param name="msg">message</param>
     public IndiDeletePropertyMessage(string device, string prop, string timestamp, string msg) {
         this.DeviceName = device;
         this.PropertyName = prop;
@@ -156,10 +234,28 @@ public class IndiDeletePropertyMessage : IndiDeviceMessage {
     }
 }
 
+/// <summary>
+/// Generic notification message
+/// </summary>
 public class IndiNotificationMessage : IndiDeviceMessage {
+    /// <summary>
+    /// Device name notification came from
+    /// </summary>
     public string DeviceName;
+    /// <summary>
+    /// Timestamp
+    /// </summary>
     public string Timestamp;
+    /// <summary>
+    /// Notification message
+    /// </summary>
     public string Message;
+    /// <summary>
+    /// Create a new notification for the given device
+    /// </summary>
+    /// <param name="device">device name</param>
+    /// <param name="timestamp">timestamp</param>
+    /// <param name="message">message</param>
     public IndiNotificationMessage(string device, string timestamp, string message) {
         this.DeviceName = device;
         this.Timestamp = timestamp;

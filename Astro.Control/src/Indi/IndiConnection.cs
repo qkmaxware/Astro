@@ -13,20 +13,50 @@ using System.Threading;
 
 namespace Qkmaxware.Astro.Control {
 
+/// <summary>
+/// INDI server information
+/// </summary>
 public class IndiServer {
+    /// <summary>
+    /// Default port used by INDI servers
+    /// </summary>
     public static readonly int DefaultPort = 7624;
+    /// <summary>
+    /// Server host ip
+    /// </summary>
+    /// <value>host</value>
     public string Host {get; private set;}
+    /// <summary>
+    /// Server port
+    /// </summary>
+    /// <value>port number</value>
     public int Port {get; private set;}
 
+    /// <summary>
+    /// Create a new reference to an INDI server
+    /// </summary>
+    /// <param name="host">host string</param>
+    /// <param name="port">port</param>
     public IndiServer(string host, int port = 7624) {
         this.Host = host;
         this.Port = port;
     }
 
+    /// <summary>
+    /// Try to establish a connection to the INDI server
+    /// </summary>
+    /// <param name="conn">connection if successful</param>
+    /// <returns>true if connection was successful, false otherwise</returns>
     public bool TryConnect(out IndiConnection conn) {
         return TryConnect(out conn, new IIndiListener[0]);
     }
 
+    /// <summary>
+    /// Try to establish a connection to the INDI server
+    /// </summary>
+    /// <param name="conn">connection if successful</param>
+    /// <param name="listeners">list of INDI listeners to automatically subscribe to the connection if successful</param>
+    /// <returns>true if connection was successful, false otherwise</returns>
     public bool TryConnect(out IndiConnection conn, params IIndiListener[] listeners) {
         conn = new IndiConnection(this);
         foreach (var listener in listeners) {
@@ -43,16 +73,31 @@ public class IndiServer {
     }
 }
 
+/// <summary>
+/// Connection from client machine to INDI server
+/// </summary>
 public class IndiConnection : Notifier<IIndiListener> {
     private IndiServer server;
     private TcpClient client;
     private StreamReader reader;
     private StreamWriter writer;
 
+    /// <summary>
+    /// Output stream to print all received messages to
+    /// </summary>
     public StreamWriter OutputStream;
 
+    /// <summary>
+    /// Check if the connection is active
+    /// </summary>
     public bool IsConnected => client != null && client.Connected;
 
+    /// <summary>
+    /// Devices acquired from this connection
+    /// </summary>
+    /// <typeparam name="string">device name</typeparam>
+    /// <typeparam name="IndiDevice">device</typeparam>
+    /// <returns>all devices</returns>
     public ConcurrentDictionary<string, IndiDevice> Devices {get; private set;} = new ConcurrentDictionary<string, IndiDevice>();
 
     internal IndiConnection (IndiServer server) {
@@ -64,6 +109,10 @@ public class IndiConnection : Notifier<IIndiListener> {
         this.Disconnect();
     }
 
+    /// <summary>
+    /// Add a device to this connection
+    /// </summary>
+    /// <param name="device">device</param>
     public void AddDevice(IndiDevice device) {
         this.Devices.AddOrUpdate(device.Name, device, (key, old) => device);
         foreach (var sub in this.Subscribers) {
@@ -71,6 +120,10 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Remove device from this connection
+    /// </summary>
+    /// <param name="device">device</param>
     public void RemoveDevice(IndiDevice device) {
         IndiDevice deleted;
         this.Devices.TryRemove(device.Name, out deleted);
@@ -79,10 +132,19 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Remove a device with the given name
+    /// </summary>
+    /// <param name="name">name of device</param>
     public void RemoveDeviceByName(string name) {
         RemoveDevice(GetDeviceByName(name));
     }
 
+    /// <summary>
+    /// Get a device with the given name
+    /// </summary>
+    /// <param name="name">name of device</param>
+    /// <returns>device or null</returns>
     public IndiDevice GetDeviceByName(string name) {
         IndiDevice device;
         if (Devices.TryGetValue(name, out device)) {
@@ -92,6 +154,11 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Get a device with the given name, or create it if it doesn't exist
+    /// </summary>
+    /// <param name="name">name of device</param>
+    /// <returns>existing or new device</returns>
     public IndiDevice GetOrCreateDevice(string name) {
         int b4 = Devices.Count;
         var device = Devices.GetOrAdd(name, new IndiDevice(name, this));
@@ -103,10 +170,16 @@ public class IndiConnection : Notifier<IIndiListener> {
         return device;
     }
 
+    /// <summary>
+    /// Query all properties for all devices
+    /// </summary>
     public void QueryProperties() {
         this.Send(new IndiGetPropertiesMessage());
     }
 
+    /// <summary>
+    /// Attempt to reconnect if no longer connected
+    /// </summary>
     public void ReConnect() {
         if (!IsConnected) {
             try {
@@ -128,6 +201,9 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Disconnect from the INDI server
+    /// </summary>
     public void Disconnect() {
         client?.Close();
         client = null;
@@ -138,6 +214,10 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Send a message to the INDI server
+    /// </summary>
+    /// <param name="message">message to send</param>
     public void Send(IndiClientMessage message) {
         this.SendXml(message.EncodeXml());
         foreach (var sub in this.Subscribers) {
@@ -145,6 +225,10 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Receive a message from the server
+    /// </summary>
+    /// <param name="message">received message</param>
     public void Receive(IndiDeviceMessage message) {
         // actually do the correct action based on the message
         // adding devices or updating properties etc
@@ -161,6 +245,10 @@ public class IndiConnection : Notifier<IIndiListener> {
         }
     }
 
+    /// <summary>
+    /// Send a raw XML message to the INDI server
+    /// </summary>
+    /// <param name="xml">xml message</param>
     public void SendXml(string xml) {
         if (IsConnected) {
             writer.Write(xml);

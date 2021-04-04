@@ -12,43 +12,86 @@ using System.Collections;
 
 namespace Qkmaxware.Astro.Control {
 
+/// <summary>
+/// Device properties container
+/// </summary>
 public class IndiPropertiesContainer : IEnumerable<KeyValuePair<string, IndiValue>>{
     private ConcurrentDictionary<string, IndiValue> properties = new ConcurrentDictionary<string, IndiValue>();
 
     public IndiPropertiesContainer() {}
 
+    /// <summary>
+    /// Check if the given property exists
+    /// </summary>
+    /// <param name="name">property name</param>
+    /// <returns>true if property exists</returns>
     public bool HasProperty(string name) {
         return properties.ContainsKey(name);
     }
 
+    /// <summary>
+    /// Clear all properties
+    /// </summary>
     public void Clear() {
         this.properties.Clear();
-    }
+    }   
 
+    /// <summary>
+    /// Delete property
+    /// </summary>
+    /// <param name="property">property name</param>
     public void Delete(string property) {
         IndiValue old;
         this.properties.TryRemove(property, out old);
     }
 
+    /// <summary>
+    /// Enumerate over properties
+    /// </summary>
+    /// <returns>property enumerator</returns>
     public IEnumerator<KeyValuePair<string, IndiValue>> GetEnumerator() {
         return this.properties.GetEnumerator();
     }
 
+    /// <summary>
+    /// Enumerate over properties
+    /// </summary>
+    /// <returns>property enumerator</returns>
     IEnumerator IEnumerable.GetEnumerator() {
         return this.GetEnumerator();
     }
 
+    /// <summary>
+    /// Get or set a property by name
+    /// </summary>
+    /// <value>property value</value>
     public IndiValue this[string key] {
         get => properties[key];
         internal set => properties[key] = value;
     }
 }
 
+/// <summary>
+/// Abstraction for a device accessible over an INDI connection
+/// </summary>
 public class IndiDevice {
     private IndiConnection conn;
+    /// <summary>
+    /// Name of the device
+    /// </summary>
+    /// <value>name</value>
     public string Name {get; private set;}
+    /// <summary>
+    /// Properties associated with this device
+    /// </summary>
+    /// <returns>property container</returns>
     public IndiPropertiesContainer Properties {get; private set;} = new IndiPropertiesContainer();
 
+    /// <summary>
+    /// Create a new device on the given connection with the given name
+    /// </summary>
+    /// <param name="name">device name</param>
+    /// <param name="connection">connection the device is accessible over</param>
     public IndiDevice(string name, IndiConnection connection) {
         this.Name = name;
         this.conn = connection;

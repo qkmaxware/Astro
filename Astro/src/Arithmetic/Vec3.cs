@@ -69,12 +69,22 @@ public class Vec3<T> where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, ID
     /// </summary>
     public Vec3<T> Flipped => -1 * this;
 
+    /// <summary>
+    /// Create a vector from components
+    /// </summary>
+    /// <param name="x">x component</param>
+    /// <param name="y">y component</param>
+    /// <param name="z">z component</param>
     public Vec3(T x, T y, T z) {
         this.X = x;
         this.Y = y;
         this.Z = z;
     }
 
+    /// <summary>
+    /// Create a vector by copying the components of another
+    /// </summary>
+    /// <param name="other">other vector</param>
     public Vec3(Vec3<T> other) {
         this.X = other.X;
         this.Y = other.Y;

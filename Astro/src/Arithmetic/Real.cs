@@ -6,8 +6,16 @@ namespace Qkmaxware.Astro.Arithmetic {
 /// Numeric quantity with no specific meaning
 /// </summary>
 public struct Real : IArithmeticValue<Real> {
+    /// <summary>
+    /// Primitive value of this real
+    /// </summary>
+    /// <value>value</value>
     public double Value {get; private set;}
 
+    /// <summary>
+    /// Create a new real value
+    /// </summary>
+    /// <param name="value">value</param>
     public Real(double value) {
         this.Value = value;
     }
@@ -27,10 +35,18 @@ public struct Real : IArithmeticValue<Real> {
         return Value.ToString();
     }
 
+    /// <summary>
+    /// Implicitly create a real from a double
+    /// </summary>
+    /// <param name="value">double</param>
     public static implicit operator Real(double value) {
         return new Real(value);
     }
 
+    /// <summary>
+    /// Implicitly create a double from a real
+    /// </summary>
+    /// <param name="value">real</param>
     public static implicit operator double(Real value) {
         return value.Value;
     }

@@ -14,7 +14,8 @@ public class Notifier<T> {
     /// </summary>
     /// <param name="subscriber">object to subscribe</param>
     public void Subscribe(T subscriber) {
-        this.Subscribers.Add(subscriber);
+        if (subscriber != null)
+            this.Subscribers.Add(subscriber);
     }
 
     /// <summary>

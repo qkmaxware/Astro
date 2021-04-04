@@ -7,11 +7,28 @@ using System.Text;
 
 namespace Qkmaxware.Astro.IO {
 
+/// <summary>
+/// VO Table
+/// </summary>
 public class VOTable {
+    /// <summary>
+    /// Name of the table
+    /// </summary>
+    /// <value>name</value>
     public string TableName {get; private set;}
+    /// <summary>
+    /// Fields in the table
+    /// </summary>
+    /// <returns>field names</returns>
     public List<string> Fields {get; private set;} = new List<string>();
+    /// <summary>
+    /// Rows
+    /// </summary>
+    /// <returns>rows</returns>
     private List<Dictionary<string, string>> Rows = new List<Dictionary<string, string>>();
-
+    /// <summary>
+    /// Total number of rows
+    /// </summary>
     public int RowCount => Rows.Count;
 
     public VOTable(string name) {
@@ -46,13 +63,36 @@ public class VOTable {
     }
 }
 
+/// <summary>
+/// File containing multiple VO Tables
+/// </summary>
 public class VOTableFile {
+    /// <summary>
+    /// Coordinate system for all VO Tables
+    /// </summary>
+    /// <value>coordinate system</value>
     public string CoordinateSystem {get; private set;}
+    /// <summary>
+    /// Equinox for all VO Tables
+    /// </summary>
+    /// <value>equinox</value>
     public string Equinox {get; private set;}
+    /// <summary>
+    /// Epoch for all VO Tables
+    /// </summary>
+    /// <value>epoch</value>
     public string Epoch {get; private set;}
 
+    /// <summary>
+    /// VO Tables within this file
+    /// </summary>
+    /// <value>tables</value>
     public VOTable[] Tables {get; private set;}
 
+    /// <summary>
+    /// First VO Table
+    /// </summary>
+    /// <returns>first table if it exists</returns>
     public VOTable FirstTable => Tables.First();
 
     public VOTableFile(string system, string equinox, string epoch, VOTable[] tables) {
@@ -63,6 +103,9 @@ public class VOTableFile {
     }
 }
 
+/// <summary>
+/// Class to deserialize data from XML formatted VO Table files
+/// </summary>
 public class VOTableDeserializer {
 
     public VOTableFile Deserialize(TextReader reader) {
