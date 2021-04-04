@@ -1,0 +1,43 @@
+<Popup @ref=popup>
+    <div class="w3-container">
+        <p>
+            Are you sure you want to @(Action)?
+        </p>
+        <div class="w3-row w3-padding">
+            <div class="w3-half w3-left-align">
+                <button class="w3-button w3-red" @onclick=cancel>Cancel</button>
+            </div>
+            <div class="w3-half w3-right-align">
+                <button class="w3-button w3-green" @onclick=confirm>Confirm</button>
+            </div>
+        </div>
+    </div>
+</Popup>
+
+@code {
+    [Parameter]
+    public string Action {get; set;} = "perform this action";
+    [Parameter]
+    public Action OnCancel {get; set;}
+    [Parameter]
+    public Action OnConfirm {get; set;}
+    private Popup popup;
+
+    public void Show() {
+        popup.Show();
+    }
+
+    public void Hide() {
+        popup.Hide();
+    }
+
+    private void cancel() {
+        OnCancel?.Invoke();
+        Hide();
+    }
+
+    private void confirm() {
+        OnCancel?.Invoke();
+        Hide();
+    }
+}

@@ -37,6 +37,9 @@
                 <button class="w3-bar-item w3-button" @onclick=@(() => telescopeSetSpeed(SlewRate.Max))>Max (max)</button>
             </div>
         </div>
+        <button class="w3-button w3-bar-item" @onclick=picklocation title="location">
+            <img src="/assets/location.svg" width=32 height=32>
+        </button>
     </div>
 </div>
 
@@ -46,13 +49,19 @@
     <PropertyDrawer @ref=drawer/>
 </Popup>
 
+<LocationPicker @ref=location></LocationPicker>
+
 }
+
+<Dialog @ref=dialog></Dialog>
 
 @code {
     private bool reconnect = true;
     private DeviceSetup devices;
     private IndiTelescopeController telescope;
+    private Dialog dialog;
     private Popup popup;
+    private LocationPicker location;
     private PropertyDrawer drawer;
 
     private void confirm() {
@@ -60,6 +69,8 @@
             reconnect = false;
             telescope = new IndiTelescopeController(devices.SelectedMount);
             telescope.Connect();
+        } else {
+            dialog.Show("No Device", "A valid INDI device must be selected to control");
         }
     }
 
@@ -70,6 +81,10 @@
         telescope = null;
     }
 
+    private void picklocation() {
+        location.Show();
+    }
+
     private void resetTelescope() {
         if (telescope != null) {
 
@@ -77,9 +92,7 @@
     }
 
     private void updateTelescopeProperties() {
-        if (telescope != null) {
-            telescope.RefreshProperties();
-        }
+        IndiConnectionManager.RefreshAll();
     }
     private void viewTelescopeProperties() {
         this.drawer.Clear();
@@ -89,29 +102,37 @@
 
     private void telescopeSetSpeed(SlewRate rate) {
         if (telescope != null) {
-            telescope.SetSlewRate(rate);
+            try {
+                telescope.SetSlewRate(rate);
+            } catch (Exception e) {
+                dialog.Show("Error", e.Message);
+            }
         }
     }
 
     private void steer(float x, float y) {
-        if (x == 0 && y == 0) {
-            telescope.Rotate(Direction.None);
-        } else if (x == 0 && y > 0) {
-            telescope.Rotate(Direction.North);
-        } else if (x == 0 && y < 0) {
-            telescope.Rotate(Direction.South);
-        } else if (x < 0 && y == 0) {
-            telescope.Rotate(Direction.West);
-        } else if (x > 0 && y == 0) {
-            telescope.Rotate(Direction.East);
-        } else if (x < 0 && y > 0) {
-            telescope.Rotate(Direction.NorthEast);
-        } else if (x > 0 && y > 0) {
-            telescope.Rotate(Direction.NorthWest);
-        } else if (x < 0 && y < 0) {
-            telescope.Rotate(Direction.SouthEast);
-        } else if (x > 0 && y < 0) {
-            telescope.Rotate(Direction.SouthWest);
+        try {
+            if (x == 0 && y == 0) {
+                telescope.Rotate(Direction.None);
+            } else if (x == 0 && y > 0) {
+                telescope.Rotate(Direction.North);
+            } else if (x == 0 && y < 0) {
+                telescope.Rotate(Direction.South);
+            } else if (x < 0 && y == 0) {
+                telescope.Rotate(Direction.West);
+            } else if (x > 0 && y == 0) {
+                telescope.Rotate(Direction.East);
+            } else if (x < 0 && y > 0) {
+                telescope.Rotate(Direction.NorthEast);
+            } else if (x > 0 && y > 0) {
+                telescope.Rotate(Direction.NorthWest);
+            } else if (x < 0 && y < 0) {
+                telescope.Rotate(Direction.SouthEast);
+            } else if (x > 0 && y < 0) {
+                telescope.Rotate(Direction.SouthWest);
+            }
+        } catch (Exception e) {
+            dialog.Show("Error", e.Message);
         }
     }
 }

@@ -50,7 +50,7 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.macOS
         dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.macOS.csproj /restore
+        msbuild Astro.Remote.macOS.csproj /restore /property:Configuration=Release
 
   Android:
     runs-on: ${{ matrix.os }}
@@ -74,7 +74,7 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.Android
         dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.Android.csproj /restore
+        msbuild Astro.Remote.Android.csproj /restore /property:Configuration=Release
 
   IOS:
     runs-on: ${{ matrix.os }}
@@ -98,5 +98,5 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.iOS
         dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.iOS.csproj /restore
+        msbuild Astro.Remote.iOS.csproj /restore /property:Configuration=Release
     

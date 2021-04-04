@@ -29,8 +29,27 @@ public abstract class IndiValue {
     }
 }
 
-public class IndiTextValue : IndiValue {
-    public string Value;
+public abstract class UpdatableIndiValue : IndiValue {
+    public abstract bool TryUpdateValue(IndiValue value);
+}
+
+public abstract class IndiValue<T> : UpdatableIndiValue {
+    public virtual T Value { get; set; }
+
+    public override bool TryUpdateValue(IndiValue from) {
+        if (from != null && from is IndiValue<T> valueType) {
+            this.UpdateValue(valueType);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    public virtual void UpdateValue(IndiValue<T> from) {
+        this.Value = from.Value;
+    }
+}
+
+public class IndiTextValue : IndiValue<string> {
     public override string IndiTypeName => "Text";
     internal override XElement CreateElement(string prefix, string subPrefix) {
         var node = new XElement(
@@ -52,8 +71,7 @@ public class IndiTextValue : IndiValue {
     
 }
 
-public class IndiNumberValue : IndiValue {
-    public double Value;  
+public class IndiNumberValue : IndiValue<double> {
     public double Min;
     public double Max;
     public double Step;
@@ -81,9 +99,9 @@ public class IndiNumberValue : IndiValue {
     }
 }
 
-public class IndiSwitchValue : IndiValue {
+public class IndiSwitchValue : IndiValue<bool> {
     public string Switch;
-    public bool IsOn;
+    public bool IsOn => Value == true;
     public override string IndiTypeName => "Switch";
     internal override XElement CreateElement(string prefix, string subPrefix) {
         var node = new XElement(
@@ -111,21 +129,20 @@ public class IndiLightValue : IndiValue {
     }
 }
 
-public class IndiBlobValue : IndiValue {
-    public string BlobString;
-    public byte[] Blob => System.Text.Encoding.ASCII.GetBytes(this.BlobString);
+public class IndiBlobValue : IndiValue<string> {
+    public byte[] Blob => System.Text.Encoding.ASCII.GetBytes(this.Value);
     public override string IndiTypeName => "BLOB";
     public IndiBlobValue() {}
     public IndiBlobValue(FileStream fs) {
         using (BinaryReader reader = new BinaryReader(fs)) {
             byte[] blob = reader.ReadBytes((int)fs.Length);
-            this.BlobString = System.Text.Encoding.ASCII.GetString(blob);
+            this.Value = System.Text.Encoding.ASCII.GetString(blob);
         }
     }
     internal override XElement CreateElement(string prefix, string subPrefix) {
         var node = new XElement(
             prefix + IndiTypeName, 
-            new XText(BlobString ?? string.Empty)
+            new XText(Value ?? string.Empty)
         );
         if (this.Name != null) {
             node.Add(new XAttribute("name", this.Name));
@@ -141,7 +158,7 @@ public class IndiBlobValue : IndiValue {
     }
 }
 
-public class IndiVector<T> : IndiValue, IList<T> where T:IndiValue {
+public class IndiVector<T> : UpdatableIndiValue, IList<T> where T:IndiValue {
 
     public string Group;
     public string State;
@@ -235,6 +252,38 @@ public class IndiVector<T> : IndiValue, IList<T> where T:IndiValue {
         }
         return parent;
     }
+
+    /// <summary>
+    /// Try to update the values of this vector from another vector
+    /// </summary>
+    /// <param name="value">indi values to draw from</param>
+    /// <returns>true if indi value is a compatible type vector</returns>
+    public override bool TryUpdateValue(IndiValue value) {
+        if (value != null && value is IndiVector<T> vec) {
+            var updates = vec.vector;
+            List<T> newVector = new List<T>(vector.Count);
+            foreach (var update in updates) {
+                // Access existing property
+                var existingProperty = vector.Where(prop => prop.Name == update.Name).FirstOrDefault();
+                if (existingProperty != null && existingProperty is UpdatableIndiValue updatableProperty) {
+                    if (updatableProperty.TryUpdateValue(update)) {
+                        // Updated existing property, add back to the list
+                        newVector.Add(existingProperty);
+                    } else {
+                        // Failed to update existing property, add the new value as raw
+                        newVector.Add(update);
+                    }
+                } else {
+                    // No previous property, add new value as raw
+                    newVector.Add(update);
+                }
+            }
+            this.vector = newVector;
+            return true;
+        } else {
+            return false;
+        }
+    }
 }
 
 /// <summary>
@@ -248,7 +297,7 @@ public static class IndiVectorExtentions {
     /// <param name="name">name of the option to enable</param>
     public static void SwitchTo(this IndiVector<IndiSwitchValue> options, string name) {
         foreach (var option in options) {
-            option.IsOn = option.Name == name;
+            option.Value = option.Name == name;
         }
     }
     /// <summary>
@@ -258,7 +307,18 @@ public static class IndiVectorExtentions {
     /// <param name="option">index of the option to enable</param>
     public static void SwitchTo(this IndiVector<IndiSwitchValue> options, int option) {
         for(var i = 0; i < options.Count; i++) {
-            options[i].IsOn = i == option;
+            options[i].Value = i == option;
+        }
+    }
+
+    /// <summary>
+    /// Enable a specific switch
+    /// </summary>
+    /// <param name="options">list of possible switch values</param>
+    /// <param name="selector">function to select switch</param>
+    public static void SwitchTo(this IndiVector<IndiSwitchValue> options, Func<IndiSwitchValue, bool> selector) {
+        foreach (var toggle in options) {
+            toggle.Value = selector(toggle);
         }
     }
 

@@ -65,6 +65,12 @@ public class IndiConnectionManager {
         conn = null;
     }
 
+    public void RefreshAll() {
+        if (conn != null) {
+            conn.QueryProperties();
+        }
+    }
+
     public bool Connect(string host, int port, Action beforeRefresh = null, Action afterRefresh = null) {
         Disconnect();
         server = new IndiServer(host, port);

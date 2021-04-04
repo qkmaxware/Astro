@@ -72,11 +72,11 @@ public class IndiDevice {
     }
 
     /// <summary>
-    /// Send a request to update or modify a particular property
+    /// Send a request to the INDI server to change the value of a property
     /// </summary>
     /// <param name="name">property name</param>
     /// <param name="value">new property value</param>
-    public void UpdateProperty(string name, IndiValue value) {
+    public void ChangeRemoteProperty(string name, IndiValue value) {
         // Create NewProperty client message
         // Populate device name, property name, and value
         var message = new IndiNewPropertyMessage(this.Name, name, value);

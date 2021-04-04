@@ -15,9 +15,6 @@ public enum Direction {
 /// </summary>
 public class IndiTelescopeController {
     private IndiDevice device;
-    private string goto_j2000_property = "EQUATORIAL_COORD";
-    private string goto_jnow_property = "EQUATORIAL_EOD_COORD";
-    private string manual_nav_property = "HORIZONTAL_COORD";
 
     public bool IsAligned {get; private set;} = false;
 
@@ -25,13 +22,16 @@ public class IndiTelescopeController {
         this.device = device;
     }
 
-    private T getOrMake<T>(string prop) where T:IndiValue, new() {
+    private T getProp<T>(string prop) where T:IndiValue, new() {
         if (device.Properties.HasProperty(prop)) {
-            return (T)device.Properties[prop];
+            var t = device.Properties[prop];
+            if (t is T) {
+                return (T)device.Properties[prop];
+            } else {
+                throw new System.ArgumentException($"Device property '{prop}' is not of type {typeof(T).Name}");
+            }
         } else {
-            var t = new T();
-            t.Name = prop;
-            return t;
+            throw new System.ArgumentException($"Device is missing required property '{prop}'");
         }
     }
 
@@ -40,63 +40,37 @@ public class IndiTelescopeController {
     }
 
     public void Connect() {
-        IndiVector<IndiSwitchValue> vector;
-        if (device.Properties.HasProperty(IndiStandardProperties.Connection)) {
-            vector = (IndiVector<IndiSwitchValue>)device.Properties[IndiStandardProperties.Connection];
-            vector.SwitchTo("CONNECT");
-        } else {
-            vector = new IndiVector<IndiSwitchValue>(IndiStandardProperties.Connection);
-            vector.Add(new IndiSwitchValue {
-                Name = "CONNECT",
-                IsOn = true
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "DISCONNECT",
-                IsOn = false
-            });
+        IndiVector<IndiSwitchValue> vector = getProp<IndiVector<IndiSwitchValue>>(IndiStandardProperties.Connection);
+        var connect = vector.GetSwitch("CONNECT");
+        if (connect != null && !connect.IsOn) {
+            // Only connect if not already connected
+            foreach (var toggle in vector) {
+                toggle.Value = toggle == connect;
+            }
+            this.device.ChangeRemoteProperty(vector.Name, vector);
+            this.device.RefreshProperties();
         }
-        this.device.UpdateProperty(vector.Name, vector);
-        this.device.RefreshProperties();
     }
 
     public void Disconnect() {
-        IndiVector<IndiSwitchValue> vector;
-        if (device.Properties.HasProperty(IndiStandardProperties.Connection)) {
-            vector = (IndiVector<IndiSwitchValue>)device.Properties[IndiStandardProperties.Connection];
-            vector.SwitchTo("DISCONNECT");
-        } else {
-            vector = new IndiVector<IndiSwitchValue>(IndiStandardProperties.Connection);
-            vector.Add(new IndiSwitchValue {
-                Name = "CONNECT",
-                IsOn = false
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "DISCONNECT",
-                IsOn = true
-            });
+        IndiVector<IndiSwitchValue> vector = getProp<IndiVector<IndiSwitchValue>>(IndiStandardProperties.Connection);
+        var disconnect = vector.GetSwitch("CONNECT");
+        if (disconnect != null && !disconnect.IsOn) {
+            // Only disconnect if not already disconnected
+            foreach (var toggle in vector) {
+                toggle.Value = toggle == disconnect;
+            }
+            this.device.ChangeRemoteProperty(vector.Name, vector);
+            this.device.RefreshProperties();
         }
-        this.device.UpdateProperty(vector.Name, vector);
-        this.device.RefreshProperties();
     }
 
     private string mode;
     private void setMode(string mode) {
-        var vector = new IndiVector<IndiSwitchValue>(IndiStandardProperties.TelescopeOnCoordinateSet);
-        vector.Add(new IndiSwitchValue {
-            Name="SLEW",
-            IsOn = "SLEW" == mode,
-        });
-        vector.Add(new IndiSwitchValue {
-            Name="TRACK",
-            IsOn = "TRACK" == mode,
-        });
-        vector.Add(new IndiSwitchValue {
-            Name="SYNC",
-            IsOn = "SYNC" == mode,
-        });
+        var vector = getProp<IndiVector<IndiSwitchValue>>(IndiStandardProperties.TelescopeOnCoordinateSet);;
         this.mode = mode;
-        System.Console.WriteLine(vector.CreateNewElement().ToString());
-        this.device.UpdateProperty("ON_COORD_SET", vector);
+        vector.SwitchTo((toggle) => toggle.Name == mode);
+        this.device.ChangeRemoteProperty("ON_COORD_SET", vector);
     }
     private void slewNext() {
         if (mode != "SLEW")
@@ -152,52 +126,14 @@ public class IndiTelescopeController {
     }
 
     public void Goto(double alt, double az) {
-        var vector = new IndiVector<IndiNumberValue>();
-        vector.Name = manual_nav_property;
-        vector.Add(new IndiNumberValue {
-            Name = "ALT",
-            Value = alt,
-            Min = -90,
-            Max = 90,
-            Step = 0.01,
-        });
-        vector.Add(new IndiNumberValue {
-            Name = "AZ",
-            Value = az,
-            Min = -180,
-            Max = 180,
-            Step = 0.01,
-        });
-        slewNext();
-        device.UpdateProperty(manual_nav_property, vector);
+        throw new System.NotImplementedException();
     }
 
     public void SetSlewRate(SlewRate rate) {
-        if (this.device.Properties.HasProperty(IndiStandardProperties.TelescopeSlewRate)) {
-            var vector = (IndiVector<IndiSwitchValue>)this.device.Properties[IndiStandardProperties.TelescopeSlewRate];
-            var index = (int)(((int)rate / 3f) * (vector.Count - 1)); 
-            vector.SwitchTo(index);
-            device.UpdateProperty(vector.Name, vector);
-        } else {
-            var vector = new IndiVector<IndiSwitchValue>("TELESCOPE_SLEW_RATE");
-            vector.Add(new IndiSwitchValue {
-                Name = "SLEW_GUIDE",
-                IsOn = rate == SlewRate.Guide,
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "SLEW_CENTERING",
-                IsOn = rate == SlewRate.Centering,
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "SLEW_FIND",
-                IsOn = rate == SlewRate.Find,
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "SLEW_MAX",
-                IsOn = rate == SlewRate.Max,
-            });
-            device.UpdateProperty(vector.Name, vector);
-        }
+        var vector = getProp<IndiVector<IndiSwitchValue>>(IndiStandardProperties.TelescopeSlewRate);
+        var index = (int)(((int)rate / 3f) * (vector.Count - 1)); 
+        vector.SwitchTo(index);
+        device.ChangeRemoteProperty(vector.Name, vector);
     }
 
     public void ClearMotion() {
@@ -205,35 +141,15 @@ public class IndiTelescopeController {
     }
 
     public void Rotate(Direction motion) {
-        var vector = getOrMake<IndiVector<IndiSwitchValue>>(IndiStandardProperties.TelescopeMotionWestEast);
-        if (vector.Count < 1) {
-            vector.Add(new IndiSwitchValue {
-                Name = "MOTION_WEST",
-                IsOn = false,
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "MOTION_EAST",
-                IsOn = false,
-            });
-        }
-        vector.GetSwitch("MOTION_WEST").IsOn = motion == Direction.West || motion == Direction.NorthWest || motion == Direction.SouthWest;
-        vector.GetSwitch("MOTION_EAST").IsOn = motion == Direction.East || motion == Direction.NorthEast || motion == Direction.SouthEast;
-        device.UpdateProperty(vector.Name, vector);
+        var vector = getProp<IndiVector<IndiSwitchValue>>(IndiStandardProperties.TelescopeMotionWestEast);
+        vector.GetSwitch("MOTION_WEST").Value = motion == Direction.West || motion == Direction.NorthWest || motion == Direction.SouthWest;
+        vector.GetSwitch("MOTION_EAST").Value = motion == Direction.East || motion == Direction.NorthEast || motion == Direction.SouthEast;
+        device.ChangeRemoteProperty(vector.Name, vector);
 
-        vector = getOrMake<IndiVector<IndiSwitchValue>>(IndiStandardProperties.TelescopeMotionNorthSouth);
-        if (vector.Count < 1) {
-            vector.Add(new IndiSwitchValue {
-                Name = "MOTION_NORTH",
-                IsOn = false,
-            });
-            vector.Add(new IndiSwitchValue {
-                Name = "MOTION_SOUTH",
-                IsOn = false,
-            });
-        }
-        vector.GetSwitch("MOTION_NORTH").IsOn = motion == Direction.North || motion == Direction.NorthEast || motion == Direction.NorthWest;
-        vector.GetSwitch("MOTION_SOUTH").IsOn = motion == Direction.South || motion == Direction.SouthEast || motion == Direction.SouthWest;
-        device.UpdateProperty(vector.Name, vector);
+        vector = getProp<IndiVector<IndiSwitchValue>>(IndiStandardProperties.TelescopeMotionNorthSouth);
+        vector.GetSwitch("MOTION_NORTH").Value = motion == Direction.North || motion == Direction.NorthEast || motion == Direction.NorthWest;
+        vector.GetSwitch("MOTION_SOUTH").Value = motion == Direction.South || motion == Direction.SouthEast || motion == Direction.SouthWest;
+        device.ChangeRemoteProperty(vector.Name, vector);
     }
 }
 

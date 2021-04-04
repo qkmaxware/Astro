@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using System.Dynamic;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Qkmaxware.Astro.Control {
 
@@ -47,6 +48,8 @@ public class IndiConnection : Notifier<IIndiListener> {
     private TcpClient client;
     private StreamReader reader;
     private StreamWriter writer;
+
+    public StreamWriter OutputStream;
 
     public bool IsConnected => client != null && client.Connected;
 
@@ -136,7 +139,7 @@ public class IndiConnection : Notifier<IIndiListener> {
     }
 
     public void Send(IndiClientMessage message) {
-        this.sendXml(message.EncodeXml());
+        this.SendXml(message.EncodeXml());
         foreach (var sub in this.Subscribers) {
             sub.OnMessageSent(message);
         }
@@ -147,14 +150,18 @@ public class IndiConnection : Notifier<IIndiListener> {
         // adding devices or updating properties etc
         // allow blockers to continue
         if (message != null) {
-            message.Process(this);
-            foreach (var sub in this.Subscribers) {
-                sub.OnMessageReceived(message);
+            try {
+                message.Process(this);
+                foreach (var sub in this.Subscribers) {
+                    sub.OnMessageReceived(message);
+                }
+            } catch {
+                // Suppress all errors for handlers
             }
         }
     }
 
-    public void sendXml(string xml) {
+    public void SendXml(string xml) {
         if (IsConnected) {
             writer.Write(xml);
             writer.Flush();
@@ -167,16 +174,32 @@ public class IndiConnection : Notifier<IIndiListener> {
             try {
                 while (reader != null && ((NetworkStream)reader.BaseStream).DataAvailable) {
                     char[] buffer = new char[client.Available];
-                    reader.ReadBlock(buffer, 0, buffer.Length);
-                    foreach (var c in buffer) {
+                    var charactersRead = reader.ReadBlock(buffer, 0, buffer.Length);
+                    for(var i = 0; i < charactersRead; i++) {
+                        var c = buffer[i];
                         if (XmlConvert.IsXmlChar(c)) {
                             str.Append(c);
+                            if (OutputStream != null) {
+                                OutputStream.Write(c);
+                            }
                         }
                     }
 
-                    if (tryParseXml(str.ToString())) {
+                    var xml = str.ToString();
+                    //var now = DateTime.Now.ToString("dd-MM-yyy HH.mm.ss");
+                    //using (var fs = new StreamWriter($"{now}.data.log")) {
+                        //fs.Write(xml);
+                        //Thread.Sleep(1500);
+                    //}
+                    
+                    //try {
+                    if (tryParseXml(xml)) {
                         str.Clear();
                     }
+                    //} catch (Exception ex) {
+                        //Console.WriteLine(ex.Message);
+                        //Console.WriteLine(ex.StackTrace);
+                    //}
                 }
             } catch {
                 continue;
@@ -288,13 +311,19 @@ public class IndiConnection : Notifier<IIndiListener> {
         } 
         else if (value.Name.EndsWith("Number")) {
             var result = parseIndiDouble(value.InnerText, value.GetAttribute("format"));
+
+            double min, max, step;
+            double.TryParse(value.GetAttribute("min"), out min);    // will be set to 0 be default if not provided (ie SET)
+            double.TryParse(value.GetAttribute("max"), out max);    // will be set to 0 be default if not provided (ie SET)
+            double.TryParse(value.GetAttribute("step"), out step);  // will be set to 0 be default if not provided (ie SET)
+            
             return new IndiNumberValue {
                 Name = name,
                 Label = label,
                 Value = result,
-                Min = double.Parse(value.GetAttribute("min")),
-                Max = double.Parse(value.GetAttribute("max")),
-                Step = double.Parse(value.GetAttribute("step"))
+                Min = min,
+                Max = max,
+                Step = step
             };
         }
         else if (value.Name.EndsWith("SwitchVector")) {
@@ -305,7 +334,7 @@ public class IndiConnection : Notifier<IIndiListener> {
                 Name = name,
                 Label = label,
                 Switch = name,
-                IsOn = value.InnerText == "On"
+                Value = value.InnerText == "On"
             };
         }
         // TODO handle lights
@@ -326,7 +355,7 @@ public class IndiConnection : Notifier<IIndiListener> {
             return new IndiBlobValue {
                 Name = name,
                 Label = label,
-                BlobString = value.InnerText
+                Value = value.InnerText
             };
         }
 
@@ -351,6 +380,10 @@ public class IndiConnection : Notifier<IIndiListener> {
                     5 -> :mm.m
                     3 -> :mm
         */
+        if (string.IsNullOrEmpty(str)) {
+            return 0;
+        }
+        
         // Hex based formats
         if (format == "x" || format == "X") {
             return int.Parse(str, System.Globalization.NumberStyles.HexNumber);

@@ -1,4 +1,8 @@
 ﻿using System;
+using System.IO;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using CommandLine;
 using Qkmaxware.Astro.Control;
@@ -10,16 +14,12 @@ namespace Qkmaxware.Astro.Cli {
         public string Host {get; set;}
         [Option('p', "port", Required = false, HelpText = "INDI server host port", Default=7624)]
         public int Port {get; set;}
-        [Option("devices", Required = false, HelpText = "Scan for devices on the INDI server")]
-        public bool QueryDevices { get; set; }
     }
 
     /*
         Example Usage:
-        > indi -h 10.0.0.145 -p 7624 --devices
-        Celestron NexStar
-        SVBONY 205
-        Searching...
+        > indi -h 10.0.0.145 -p 7624
+        SEND: <getProperties version="1.7" />
     */
     class IndiCli {
         static void Main() {
@@ -30,49 +30,22 @@ namespace Qkmaxware.Astro.Cli {
 
                 IndiConnection conn;
                 if (server.TryConnect(out conn)) {
-                    if (o.QueryDevices) {
-                        ScanForDevices(conn);
+                    // Create separate writer window 
+                    var now = DateTime.Now.ToString("dd-MM-yyy HH.mm.ss");
+                    using (var fs = new StreamWriter($"{now}.indi.log")) {
+                        conn.OutputStream = fs;
+                        
+                        string command;
+                        Console.Write("SEND: ");
+                        while ((command = Console.ReadLine()) != "exit") {
+                            conn.SendXml(command);
+                            Console.Write("SEND: ");
+                        }
                     }
                 } else {
                     Console.WriteLine($"Failed to connect to INDI server at {o.Host}:{o.Port}");
                 }
             });
-        }
-
-        private static void ScanForDevices(IndiConnection conn) {
-            var subscriber = new IndiDeviceListener();
-            conn.Subscribe(subscriber);
-            subscriber.PrintScanning();
-            conn.QueryProperties();
-            // Spin while searching refresh search every x time
-            while(true) {
-                Thread.Sleep(TimeSpan.FromSeconds(4));
-                conn.QueryProperties();
-            }
-        }
-    }
-
-    class IndiDeviceListener : BaseIndiListener {
-        private int row;
-        private int col;
-
-        public IndiDeviceListener() {}
-
-        public void Print(string text, string scanningText = "Searching...") {
-            Console.WriteLine(text);
-
-            PrintScanning(scanningText);
-        }
-        public void PrintScanning(string scanningText = "Searching...") {
-            col = Console.CursorLeft;
-            row = Console.CursorTop;
-            Console.Write(scanningText);
-
-            Console.SetCursorPosition(col, row);
-        }
-
-        public override void OnAddDevice(IndiDevice device) {
-            Print(device.Name);
         }
     }
 }

@@ -1,8 +1,7 @@
 name: Publish Astro.Remote
 on:
-  push: 
-    branches: 
-    - "*"
+  release: 
+    types: [ published ]
 jobs:
   Windows:
     runs-on: ${{ matrix.os }}
@@ -30,13 +29,14 @@ jobs:
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
-        filename: 'release.zip'
-        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
+        filename: 'windows.zip'
+        directory: Astro.Remote.Windows\bin\Release\
     - name: Upload
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "release.zip"
+        asset_path: "windows.zip"
 
   MacOS:
     runs-on: ${{ matrix.os }}
@@ -60,17 +60,18 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.macOS
         dotnet restore --configfile "..\..\nuget.config"
-        dotnet publish -c Release
+        msbuild Astro.Remote.macOS.csproj /restore /property:Configuration=Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
-        filename: 'release.zip'
-        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
+        filename: 'macos.zip'
+        directory: Astro.Remote.macOS\bin\Release\
     - name: Upload
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "release.zip"
+        asset_path: "macos.zip"
 
   Android:
     runs-on: ${{ matrix.os }}
@@ -94,17 +95,18 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.Android
         dotnet restore --configfile "..\..\nuget.config"
-        dotnet publish -c Release
+        msbuild Astro.Remote.Android.csproj /restore /property:Configuration=Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
-        filename: 'release.zip'
-        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
+        filename: 'android.zip'
+        directory: Astro.Remote.Android\bin\Release\
     - name: Upload
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "release.zip"
+        asset_path: "android.zip"
 
   IOS:
     runs-on: ${{ matrix.os }}
@@ -128,14 +130,16 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.iOS
         dotnet restore --configfile "..\..\nuget.config"
-        dotnet publish -c Release
+        msbuild Astro.Remote.iOS.csproj /restore /property:Configuration=Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 
-        filename: 'release.zip'
-        directory: Astro.Remote.Windows\bin\Release\netcoreapp3.1
+        filename: 'ios.zip'
+        directory: Astro.Remote.iOS\bin\Release\
     - name: Upload
-      uses: ncipollo/release-action@v1
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "release.zip"
+        asset_path: "ios.zip"
+    

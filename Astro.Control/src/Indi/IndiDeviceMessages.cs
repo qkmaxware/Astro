@@ -34,14 +34,30 @@ public class IndiSetPropertyMessage : IndiDeviceMessage {
         if (string.IsNullOrEmpty(DeviceName)) {
             // Set property for all devices
             foreach (var device in connection.Devices) {
-                device.Value.Properties[PropertyName] = PropertyValue;
+                updateProperty(device.Value, PropertyName, PropertyValue);
             }
         } else {
             var device = connection.GetDeviceByName(DeviceName);
             if (device != null) {
                 // Set property on specific device
-                device.Properties[PropertyName] = PropertyValue;
+                updateProperty(device, PropertyName, PropertyValue);
             }
+        }
+    }
+
+    private void updateProperty(IndiDevice device, string property, IndiValue value) {
+        // TODO, fix this to not overwrite values, but just to update the actual "stored" value
+        if (device.Properties.HasProperty(PropertyName)) {
+            var oldProp = device.Properties[property];
+            if (oldProp is UpdatableIndiValue updatableProp) {
+                if (!updatableProp.TryUpdateValue(value)) {
+                    device.Properties[property] = PropertyValue;
+                }
+            } else {
+                device.Properties[property] = PropertyValue;
+            }
+        } else {
+            // Do nothing, SET does not make new properties, just updates existing ones
         }
     }
 
