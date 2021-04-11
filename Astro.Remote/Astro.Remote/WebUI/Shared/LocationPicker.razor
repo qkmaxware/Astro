@@ -1,27 +1,32 @@
 <Popup @ref=popup>
-    <div class="w3-container">
+    <div class="w3-container w3-padding">
         <div class="w3-row">
-            <div class="w3-col w3-padding w3-right-align" style="width: 72px;">
-                <button class="w3-button" @onclick=getgps title="current location">
-                    <img src="/assets/currentLocation.svg" width=32 height=32>
-                </button>
+            <div class="w3-half w3-row">
+                <div class="w3-col w3-padding w3-right-align" style="width: 72px;">
+                    <button class="w3-button" @onclick=getgps title="current location">
+                        <img src="/assets/currentLocation.svg" width=32 height=32>
+                    </button>
+                </div>
+                <div class="w3-rest">
+                    <div class="w3-padding">
+                        <label>Latitude</label>
+                        <input class="w3-input w3-dark-grey" @bind=lat type="number">
+                    </div>
+                    <div class="w3-padding">
+                        <label>Longitude</label>
+                        <input class="w3-input w3-dark-grey" @bind=lon type="number">
+                    </div>
+                </div>
             </div>
-            <div class="w3-rest w3-row">
-                <div class="w3-half w3-padding">
-                    <label>Latitude</label>
-                    <input class="w3-input w3-dark-grey" @bind=lat type="number">
-                </div>
-                <div class="w3-half w3-padding">
-                    <label>Longitude</label>
-                    <input class="w3-input w3-dark-grey" @bind=lon type="number">
-                </div>
+            <div class="w3-half w3-dark-grey w3-padding">
+                <SearchableCollection Items="CityCatalogue.Cities" OnSelectionChanged=setViaSearch />
             </div>
         </div>
         <div class="w3-row w3-padding">
-            <div class="w3-half w3-left-align">
+            <div class="w3-col s6 w3-left-align">
                 <button class="w3-button w3-red" @onclick=cancel>Cancel</button>
             </div>
-            <div class="w3-half w3-right-align">
+            <div class="w3-col s6 w3-right-align">
                 <button class="w3-button w3-green" @onclick=confirm>Confirm</button>
             </div>
         </div>
@@ -55,6 +60,12 @@
 
     public void Hide() {
         popup.Hide();
+        StateHasChanged();
+    }
+
+    private void setViaSearch(City selected) {
+        this.lat = selected.Latitude;
+        this.lon = selected.Longitude;
         StateHasChanged();
     }
 

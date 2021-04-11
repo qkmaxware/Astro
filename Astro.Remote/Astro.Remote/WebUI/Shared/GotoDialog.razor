@@ -1,0 +1,44 @@
+<Popup @ref=popup>
+    <div class="w3-padding">
+        <input class="w3-round w3-input w3-grey" @bind="search" placeholder="search" />
+        <ul class="w3-padding w3-ul w3-hoverable">
+            @if(search_results != null) {
+            foreach (var item in search_results) {
+            <li>
+                <img src="" alt="icon" width=32 height=32/>
+                <span>@item?.ToString()</span>
+            </li> 
+            }
+            }
+        </ul>
+    </div>
+</Popup>
+
+@code {
+
+    private Popup popup;
+    private string _searchString;
+    private string search {
+        get => _searchString;
+        set {
+            _searchString = value;
+            startSearchAsync();
+        }
+    }
+
+    private List<object> search_results;
+
+    public void Show() {
+        this.popup.Show();
+    }
+
+    public void Hide() {
+        this.popup.Hide();
+    }
+
+    private async Task startSearchAsync() {
+        // search_results = ...
+        // InvokeAsync(StateHasChanged);
+    }
+
+}

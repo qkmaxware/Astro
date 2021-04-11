@@ -1,24 +1,14 @@
-using System.Text.Json.Serialization;
+
 using Qkmaxware.Astro.Arithmetic;
 
 namespace Qkmaxware.Astro {
 
 /// <summary>
-/// Json converter for mass quantities
-/// </summary>
-public class MassJsonConverter : QuantityJsonConverter<Mass> {
-	public override string GetSuffix() => "kg";
-    public override Mass ParseQuantity(double quant) => Mass.Kilograms(quant);
-    public override double GetQuantity(Mass value) => value.TotalKilograms;
-}
-
-/// <summary>
 /// Measurement of mass
 /// </summary>
-[JsonConverter(typeof(MassJsonConverter))]
 public class Mass : IArithmeticValue<Mass> {
     private double value;
-    private static readonly double G = 6.674e-11;
+    private static readonly double G = 6.67384e-11;
 
     /// <summary>
     /// Total mass measured in kilograms

@@ -6,10 +6,25 @@ namespace Qkmaxware.Astro.Arithmetic {
 /// Vector with numeric properties of no specific meaning 
 /// </summary>
 public class Vec3 : Vec3<Real> {
+    /// <summary>
+    /// Vector with all 0s
+    /// </summary>>
     public static readonly Vec3 Zero = new Vec3(0,0,0);
+    /// <summary>
+    /// Vector with all 1s
+    /// </summary>
     public static readonly Vec3 One = new Vec3(1,1,1);
+    /// <summary>
+    /// Vector in the X direction
+    /// </summary>
     public static readonly Vec3 I = new Vec3(1,0,0);
+    /// <summary>
+    /// Vector in the Y direction
+    /// </summary>
     public static readonly Vec3 J = new Vec3(0,1,0);
+    /// <summary>
+    /// Vector in the Z direction
+    /// </summary>
     public static readonly Vec3 K = new Vec3(0,0,1);
 
     public Vec3() : base(0,0,0) {}

@@ -36,6 +36,15 @@ public class MomentTest {
         Assert.AreEqual(15, sidereal.Minutes);     
         Assert.AreEqual(04, sidereal.Seconds);     
     }
+
+    [TestMethod]
+    public void TestTimeDifference() {
+        Moment t1 = new DateTime(year: 2021, month: (int)Month.Jan, day: 1);
+        Moment t2 = new DateTime(year: 2021, month: (int)Month.Jan, day: 7);
+
+        var duration = t2 - t1;
+        Assert.AreEqual(6, duration.TotalDays);
+    }
 }
 
 }

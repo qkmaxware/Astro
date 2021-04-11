@@ -22,8 +22,4 @@
     <None Include="..\LICENSE.md" CopyToOutputDirectory="Always" Pack="true" PackagePath="$(PackageLicenseFile)" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="System.Text.Json" Version="5.0.1" />
-  </ItemGroup>
-
 </Project>

@@ -1,6 +1,5 @@
 using System;
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Qkmaxware.Astro.Arithmetic;
 
 namespace Qkmaxware.Astro.Dynamics {
 
@@ -14,93 +13,8 @@ public enum AnomalyType {
 }
 
 /// <summary>
-/// Class to convert orbital elements to and from json
-/// </summary>
-public class OrbitalElementJsonConverter : JsonConverter<OrbitalElements> {
-    public override OrbitalElements? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-        if (reader.TokenType == JsonTokenType.Null) {
-            return null;
-        }
-
-        if (reader.TokenType != JsonTokenType.StartObject)
-		    throw new JsonException("Expected StartObject token");
-
-        Distance? a = null;
-        Angle? i = null;
-        double e = 0;
-        Angle? O = null;
-        Angle? w = null;
-        Angle? v = null;
-
-        while (reader.Read()) {
-            switch (reader.TokenType) {
-                case JsonTokenType.StartObject:
-                case JsonTokenType.StartArray:
-                case JsonTokenType.EndArray:
-                    break;
-                case JsonTokenType.Number:
-                case JsonTokenType.String:
-                case JsonTokenType.PropertyName:
-                    var name = reader.GetString();
-                    switch (name) {
-                        case "a":
-                            a = JsonSerializer.Deserialize<Distance>(ref reader, options);
-                            break;
-                        case "i":
-                            i = JsonSerializer.Deserialize<Angle>(ref reader, options);
-                            break;
-                        case "e":
-                            e = JsonSerializer.Deserialize<double>(ref reader, options);
-                            break;
-                        case "Ω":
-                            O = JsonSerializer.Deserialize<Angle>(ref reader, options);
-                            break;
-                        case "w":
-                            w = JsonSerializer.Deserialize<Angle>(ref reader, options);
-                            break;
-                        case "v":
-                            v = JsonSerializer.Deserialize<Angle>(ref reader, options);
-                            break;
-                    }
-                    break;
-                case JsonTokenType.EndObject:
-                    if (a == null || i == null || O == null || w == null || v == null) {
-                        throw new JsonException("Object is missing required orbital element properties");
-                    } else {
-                        return new OrbitalElements(a, i, e, O, w, AnomalyType.True, v);
-                    }
-            }
-        }
-        return null;
-    }
-
-    public override void Write(Utf8JsonWriter writer, OrbitalElements value, JsonSerializerOptions options) {
-        writer.WriteStartObject();
-        writer.WritePropertyName("a");
-        JsonSerializer.Serialize(writer, value.SemimajorAxis, options);
-
-        writer.WritePropertyName("i");
-        JsonSerializer.Serialize(writer, value.Inclination, options);
-
-        writer.WritePropertyName("e");
-        JsonSerializer.Serialize(writer, value.Eccentricity, options);
-
-        writer.WritePropertyName("Ω");
-        JsonSerializer.Serialize(writer, value.LongitudeOfAscendingNode, options);
-
-        writer.WritePropertyName("w");
-        JsonSerializer.Serialize(writer, value.ArgumentOfPeriapsis, options);
-        
-        writer.WritePropertyName("v");
-        JsonSerializer.Serialize(writer, value.TrueAnomaly, options);
-        writer.WriteEndObject();
-    }
-}
-
-/// <summary>
 /// Keplerian orbital elements
 /// </summary>
-[JsonConverter(typeof(OrbitalElementJsonConverter))]
 public class OrbitalElements {
 
     #region Orbital Elements
@@ -145,54 +59,316 @@ public class OrbitalElements {
     #endregion
 
     #region Derived Quantitied
+    // Note equations come from http://www.bogan.ca/orbits/kepler/orbteqtn.html 
+    // Reference: "Fundamentals of Astrodynamics"
 
+    /// <summary>
+    /// Calculate the cartesian position of the orbiting object relative to the main body
+    /// </summary>
+    /// <param name="parent">body being orbited</param>
+    /// <returns>position</returns>
+    public Vec3<Distance> CartesianPosition(Mass parent) {
+        var nu = this.TrueAnomaly.TotalRadians;
+        var i = this.Inclination.TotalRadians;
+        var mu = parent.μ;
+        var a = this.SemimajorAxis.TotalMetres;
+        var e = this.Eccentricity;
+        var r = a * (1 - e * Math.Cos(this.EccentricAnomaly.TotalRadians));
+        var h = Math.Sqrt(mu * a * (1 - Math.Pow(e, 2)));
+        var O = this.LongitudeOfAscendingNode.TotalRadians;
+        var w = this.ArgumentOfPeriapsis.TotalRadians;
+
+        var x = r * (Math.Cos(O) * Math.Cos(w + nu) - Math.Sin(O) * Math.Sin(w + nu) * Math.Cos(i));
+        var y = r * (Math.Sin(O) * Math.Cos(w + nu) + Math.Cos(O) * Math.Sin(w + nu) * Math.Cos(i));
+        var z = r * (Math.Sin(i) * Math.Sin(w + nu));
+
+        return new Vec3<Distance>(
+            Distance.Metres(x),
+            Distance.Metres(y),
+            Distance.Metres(z)
+        );
+    }
+
+    /// <summary>
+    /// Calculate the cartesian velocity of the orbiting object relative to the main body
+    /// </summary>
+    /// <param name="parent">body being orbited</param>
+    /// <returns>velocity</returns>
+    public Vec3<Speed> CartesianVelocity(Mass parent) {
+        var nu = this.TrueAnomaly.TotalRadians;
+        var i = this.Inclination.TotalRadians;
+        var mu = parent.μ;
+        var a = this.SemimajorAxis.TotalMetres;
+        var e = this.Eccentricity;
+        var r = a * (1 - e * Math.Cos(this.EccentricAnomaly.TotalRadians));
+        var h = Math.Sqrt(mu * a * (1 - Math.Pow(e, 2)));
+        var O = this.LongitudeOfAscendingNode.TotalRadians;
+        var w = this.ArgumentOfPeriapsis.TotalRadians;
+
+        var x = r * (Math.Cos(O) * Math.Cos(w + nu) - Math.Sin(O) * Math.Sin(w + nu) * Math.Cos(i));
+        var y = r * (Math.Sin(O) * Math.Cos(w + nu) + Math.Cos(O) * Math.Sin(w + nu) * Math.Cos(i));
+        var z = r * (Math.Sin(i) * Math.Sin(w + nu));
+
+        var p = a * (1 - Math.Pow(e, 2));
+
+        var vx = (x*h*e/(r*p))*Math.Sin(nu) - (h/r)*(Math.Cos(O)*Math.Sin(w+nu) + Math.Sin(O)*Math.Cos(w+nu)*Math.Cos(i));
+        var vy = (y*h*e/(r*p))*Math.Sin(nu) - (h/r)*(Math.Sin(O)*Math.Sin(w+nu) - Math.Cos(O)*Math.Cos(w+nu)*Math.Cos(i));
+        var vz = (z*h*e/(r*p))*Math.Sin(nu) + (h/r)*(Math.Cos(w+nu)*Math.Sin(i));
+
+        return new Vec3<Speed>(
+            Speed.MetresPerSecond(vx),
+            Speed.MetresPerSecond(vy),
+            Speed.MetresPerSecond(vz)
+        );
+    }
+
+    /// <summary>
+    /// Specific orbital energy for this orbit
+    /// </summary>
+    /// <param name="parent">mass of body being orbitted</param>
+    /// <returns>J/kg</returns>
+    public double SpecificOrbitalEnergy(Mass parent) {
+        return -parent.μ / (2 * SemimajorAxis.TotalMetres);
+    }
+
+    /// <summary>
+    /// Total energy of a craft in this orbit
+    /// </summary>
+    /// <param name="parent">mass of body being orbitted</param>
+    /// <param name="self">mass of body in orbit</param>
+    /// <returns>orbital energy</returns>
+    public Energy TotalEnergy(Mass parent, Mass self) {
+        if (IsParabolic)
+            return Energy.Joules(0);
+        else {
+            var specificOrbitalEnergy = SpecificOrbitalEnergy(parent);
+            return Energy.Joules(self.TotalKilograms /*kg*/ * specificOrbitalEnergy /*J/kg*/);
+        }
+    }
+
+    /// <summary>
+    /// Orbital period around a given mass
+    /// </summary>
+    /// <param name="parent">mass of body being orbitted</param>
+    /// <returns>orbital period if the orbit is closes, otherwise infinity</returns>
+    public Duration OrbitalPeriod(Mass parent) {
+        if (IsParabolic || IsHyperbolic) {
+            return Duration.Infinite;
+        } else {
+            var numerator = 4 * Math.PI * Math.PI;
+            var a = this.SemimajorAxis.TotalMetres;
+            var scale = a * a * a;
+            var denominator = parent.μ;
+            return Duration.Seconds( Math.Sqrt( (numerator/denominator) * scale ) );
+        }
+    }
+    /// <summary>
+    /// Mean motion of an object in this orbit
+    /// </summary>
+    /// <param name="parent">mass of body being orbitted</param>
+    /// <returns>mean motion</returns>
+    public RateOfChange<Angle> MeanMotion(Mass parent) {
+        return new RateOfChange<Angle>(
+            Angle.Revolutions(1),
+            OrbitalPeriod(parent)
+        );
+    }
+    private Duration timeAtAnomaly(Mass parent, Angle anomaly) {
+        var a = this.SemimajorAxis.TotalMetres;
+        var aaa = a * a * a;
+        var u = parent.μ;
+        var t = Math.Sqrt(aaa / u) * (anomaly.TotalRadians - this.Eccentricity * Math.Sin(anomaly.TotalRadians));
+        return Duration.Seconds(t);
+    }
+    public Duration TimeSincePeriapsis(Mass parent) {
+        var currentTime = timeAtAnomaly(parent, this.EccentricAnomaly);
+        var timeAtPeriapsis = timeAtAnomaly(parent, Angle.Radians(0));
+        return currentTime - timeAtPeriapsis;
+    }
+    public Duration TimeUntilPeriapsis(Mass parent) {
+        return OrbitalPeriod(parent) - TimeSincePeriapsis(parent);
+    }
+    public Duration TimeSinceApoapsis(Mass parent) {
+        var currentTime = timeAtAnomaly(parent, this.EccentricAnomaly);
+        var timeAtApoapsis = timeAtAnomaly(parent, Angle.Radians(Math.PI));
+        return currentTime - timeAtApoapsis;
+    }
+    public Duration TimeUntilApoapsis(Mass parent) {
+        return OrbitalPeriod(parent) - TimeSinceApoapsis(parent);
+    }
     /// <summary>
     /// The axis perpendicular to the Semimajor Axis
     /// </summary>
-    public Distance SemiminorAxis => (SemimajorAxis * (1 - Eccentricity));
+    public Distance SemiminorAxis() => (SemimajorAxis * (1 - Eccentricity));
     /// <summary>
     /// Distance from the point that is closest to the body it orbits.
     /// </summary>
-    public Distance PeriapsisDistance {
-        get {
-            if (IsParabolic) {
-                return this.SemimajorAxis;
-            } else {
-                return (this.SemimajorAxis * (1 - this.Eccentricity));
-            }
+    public Distance PeriapsisDistance() {
+        if (IsParabolic) {
+            return this.SemimajorAxis;
+        } else {
+            return (this.SemimajorAxis * (1 - this.Eccentricity));
         }
     }
     /// <summary>
     /// The length of the cord parallel to the conic section and running through a focus
     /// </summary>
-    public Distance SemilatusRectum {
-        get {
-            if (IsParabolic) {
-                return (2 * PeriapsisDistance);
-            } 
-            else { 
-                return (this.SemimajorAxis * (1 - this.Eccentricity * this.Eccentricity)); 
-            }
+    public Distance SemilatusRectum() {
+        if (IsParabolic) {
+            return (2 * PeriapsisDistance());
+        } 
+        else { 
+            return (this.SemimajorAxis * (1 - this.Eccentricity * this.Eccentricity)); 
         }
     }
     /// <summary>
     /// Is the orbit a circle
     /// </summary>
-    private bool IsCircular => Eccentricity == 0;
+    public bool IsCircular => Eccentricity == 0;
     /// <summary>
     /// In the orbit an ellipse
     /// </summary>
-    private bool IsEllipse => Eccentricity < 1;
+    public bool IsEllipse => Eccentricity < 1;
     /// <summary>
     /// Is the orbit parabolic
     /// </summary>
-    private bool IsParabolic => Eccentricity == 1;
+    public bool IsParabolic => Eccentricity == 1;
     /// <summary>
     /// Is the orbit hyperbolic
     /// </summary>
-    private bool IsHyperbolic => Eccentricity > 1;
+    public bool IsHyperbolic => Eccentricity > 1;
 
     #endregion
+
+    /// <summary>
+    /// Create orbital elements from cartesian state vector
+    /// </summary>
+    /// <param name="parent">mass of body being orbited</param>
+    /// <param name="positionVector">position relative to the parent object</param>
+    /// <param name="velocityVector">velocity relative to the parent object</param>    
+    public OrbitalElements(Mass parent, Vec3<Distance> positionVector, Vec3<Speed> velocityVector) {
+        var position = positionVector.Convert(x => (Real)x.TotalMetres);
+        var velocity = velocityVector.Convert(x => (Real)x.TotalMetresPerSecond);
+        var distance = position.Length;
+        var speed = velocity.Length;
+        var M = parent;
+
+        // Cartesian state vector to orbital element conversion
+        var H = Vec3<Real>.Cross(position, velocity);
+        var h = H.Length;
+        var up = new Vec3<Real>(0,0,1);
+        var N = Vec3<Real>.Cross(up, H);
+        var n = N.Length;
+
+        var E = (Vec3<Real>.Cross(velocity,H) / M.μ) - (position / distance);
+        var e = E.Length;
+
+        var energy = (speed * speed)/2 - M.μ/distance;
+
+        double a; double p;
+        if (Math.Abs(e - 1.0) > double.Epsilon) {
+            a = -M.μ / (2 * energy);
+            p = a * (1 - e * e);
+        } else {
+            p = (h * h) / M.μ;
+            a = double.PositiveInfinity;
+        }
+
+        double i = Math.Acos(H.Z / h);
+
+        double eps = double.Epsilon;
+        double Omega; double w;
+        if (Math.Abs(i) < eps) {
+            Omega = 0; // For non-inclined orbits, this is undefined, set to 0 by convention
+            if (Math.Abs(e) < eps) {
+                w = 0; // For circular orbits, place periapsis at ascending node by convention
+            }
+            else {
+                w = Math.Acos(E.X / e); 
+            }
+        } else {
+            Omega = Math.Acos(N.X / n);
+            if (N.Y < 0) {
+                Omega = (2 * Math.PI) - Omega;
+            }
+
+            w = Math.Acos(Vec3<Real>.Dot(N, E) / (n * e));
+        }
+
+        double nu;
+        if (Math.Abs(e) < eps) {
+            if (Math.Abs(i) < eps) {
+                nu = Math.Acos(position.X / distance);
+                if (velocity.X > 0) {
+                    nu = (2 * Math.PI) - nu;
+                }
+            } else {
+                nu = Math.Acos(Vec3<Real>.Dot(N,position) / (n * distance));
+                if (Vec3<Real>.Dot(N,velocity) > 0) {
+                    nu = (2 * Math.PI) - nu;
+                }
+            }
+        } else {
+            if (E.Z < 0) {
+                w = (2 * Math.PI) - w;
+            }
+
+            nu = Math.Acos(Vec3<Real>.Dot(E, position) / (e * distance));
+            if (Vec3<Real>.Dot(position,velocity) < 0) {
+                nu = (2 * Math.PI) - nu;
+            }
+        }
+
+        this.SemimajorAxis = Distance.Metres(a);
+        this.Inclination = Angle.Radians(i);
+        this.Eccentricity = e;
+        this.LongitudeOfAscendingNode = Angle.Radians(Omega);
+        this.ArgumentOfPeriapsis = Angle.Radians(w);
+        this.AnomalyType = AnomalyType.True;
+        var anomalyValue = Angle.Radians(nu);
+
+        // Compute true anomaly
+        switch (AnomalyType) {
+            case AnomalyType.Mean:
+                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, anomalyValue.TotalRadians));
+                break;
+            case AnomalyType.Eccentric:
+                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, anomalyValue.TotalRadians));
+                break;
+            case AnomalyType.True:
+            default:
+                this.TrueAnomaly = anomalyValue;
+                break;
+        }
+
+        // Compute mean anomaly
+        switch (AnomalyType) {
+            case AnomalyType.Mean:
+                this.MeanAnomaly = anomalyValue;
+                break;
+            case AnomalyType.Eccentric:
+                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, anomalyValue.TotalRadians));
+                break;
+            case AnomalyType.True:
+            default:
+                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, anomalyValue.TotalRadians));
+                break;
+        }
+
+        // Compute eccentric anomaly
+        switch (AnomalyType) {
+            case AnomalyType.Mean:
+                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, anomalyValue.TotalRadians));
+                break;
+            case AnomalyType.Eccentric:
+                this.EccentricAnomaly = anomalyValue;
+                break;
+            case AnomalyType.True:
+            default:
+                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, anomalyValue.TotalRadians));
+                break;
+        }
+    }
 
     /// <summary>
     /// Create a new orbital element collection
@@ -204,13 +380,13 @@ public class OrbitalElements {
     /// <param name="ω">argument of periapsis</param>
     /// <param name="anomalyValue">anomaly value</param>
     /// <param name="anomalyType">type of anomaly</param>
-    public OrbitalElements (Distance a, Angle i, double e, Angle @Ω, Angle @ω, AnomalyType anomalyType, Angle anomalyValue) {
+    public OrbitalElements (Distance a, Angle i, double e, Angle @Ω, Angle @w, AnomalyType anomalyType, Angle anomalyValue) {
         this.SemimajorAxis = a;
         this.Inclination = i;
         this.Eccentricity = e;
         this.LongitudeOfAscendingNode = @Ω;
-        this.ArgumentOfPeriapsis = @ω;
-
+        this.ArgumentOfPeriapsis = @w;
+        
         this.AnomalyType = anomalyType;
 
         // Compute true anomaly
@@ -258,6 +434,10 @@ public class OrbitalElements {
 
 
     # region Anomaly Conversion Utilities
+
+    private void fillAnomalies(AnomalyType anomalyType, Angle anomalyValue) {
+        
+    }
 
     /// <summary>
     /// Convert mean anomaly to true anomaly

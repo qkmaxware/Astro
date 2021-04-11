@@ -159,6 +159,51 @@ public class ReferenceFrame {
     }   
 
     /// <summary>
+    /// Transform a direction vector from local space to the local space of another frame of reference
+    /// </summary>
+    /// <param name="direction">direction vector</param>
+    /// <param name="frame">new frame of reference</param>
+    /// <typeparam name="T">vector type</typeparam>
+    /// <returns>Direction relative to the new frame of reference</returns>
+    public Vec3<T> LocalToDirectionInFrame<T>(Vec3<T> direction, ReferenceFrame frame) where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, IDividable<T>, IScaleable<T>, ISqrt<T>{
+        // Keep rotating the vector to match the reference frame, no moving is required
+        var root = FindSharedParent(this, frame);
+        Quat toRoot = Quat.Identity;
+        Quat fromRoot = Quat.Identity;
+
+        ReferenceFrame? path = this;
+        while (path != root && path != null) {
+            toRoot = path.Rotation * toRoot;
+            path = path.ParentReferenceFrame;
+        }
+        path = frame;
+        while (path != root && path != null) {
+            fromRoot = path.Rotation * fromRoot;
+            path = path.ParentReferenceFrame;
+        }
+
+        return (fromRoot.Conjugate * toRoot) * direction;
+    }
+
+    /// <summary>
+    /// Convert a direction vector from local space to global space
+    /// </summary>
+    /// <param name="direction">direction in local space</param>
+    /// <typeparam name="T">vector type</typeparam>
+    /// <returns>Direction relative to global space</returns>
+    public Vec3<T> LocalToGlobalDirection<T>(Vec3<T> direction) where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, IDividable<T>, IScaleable<T>, ISqrt<T>{
+        Quat toRoot = Quat.Identity;
+
+        ReferenceFrame? path = this;
+        while (path != null) {
+            toRoot = path.Rotation * toRoot;
+            path = path.ParentReferenceFrame;
+        }
+
+        return toRoot * direction;
+    }
+
+    /// <summary>
     /// Get the position of this reference frame relative to another frame of reference
     /// </summary>
     /// <param name="frame">other frame of reference</param>

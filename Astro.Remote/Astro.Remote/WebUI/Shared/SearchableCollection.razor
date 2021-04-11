@@ -1,0 +1,33 @@
+@typeparam T
+
+<input class="w3-input w3-dark-grey" placeholder="search" @bind-value="searchTerm" @bind-value:event="oninput"/>
+
+<ul class="w3-padding w3-ul w3-hoverable">
+    @if (!string.IsNullOrEmpty(searchTerm)) {
+        foreach(var item in filteredItems) {
+            <li @onclick=@(() => select(item))>@item?.ToString()</li>
+        }
+    }
+</ul>
+
+@code {
+
+    private string searchTerm {get; set;} = string.Empty; // need at least 1 letter
+
+    public T Selected {get; private set;} = default(T);
+
+
+    [Parameter]
+    public IEnumerable<T> Items {get; set;} 
+    [Parameter]
+    public Action<T> OnSelectionChanged {get; set;}
+
+    private IEnumerable<T> filteredItems => Items.Where(i => System.Globalization.CultureInfo.InvariantCulture.CompareInfo.IndexOf(i.ToString(), searchTerm, System.Globalization.CompareOptions.IgnoreCase) >= 0);
+
+    private void select(T item) {
+        this.searchTerm = string.Empty;
+        this.Selected = item;
+        OnSelectionChanged?.Invoke(item);
+    }
+
+}

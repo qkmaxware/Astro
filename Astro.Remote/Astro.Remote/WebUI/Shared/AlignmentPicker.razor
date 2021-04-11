@@ -1,0 +1,83 @@
+<Popup @ref=popup>
+    <div class="w3-container w3-padding">
+        <div class="w3-row">
+            <div class="w3-half w3-row">
+                <div class="w3-round w3-bar w3-row">
+                    <button class="w3-button @(UseJ2000 ? "w3-blue" : string.Empty) w3-col s6" @onclick=@(() => UseJNow = false)>J2000</button>
+                    <button class="w3-button @(UseJNow? "w3-blue" : string.Empty) w3-col s6" @onclick=@(() => UseJNow = true)>JNow</button>
+                </div>
+                <div>
+                    <div class="w3-padding">
+                        <label>Right Ascension</label>
+                        <input class="w3-input w3-dark-grey" @bind=ra type="number">
+                    </div>
+                    <div class="w3-padding">
+                        <label>Declination</label>
+                        <input class="w3-input w3-dark-grey" @bind=dec type="number">
+                    </div>
+                </div>
+            </div>
+            <div class="w3-half w3-dark-grey w3-padding">
+                <SearchableCollection Items="AlignmentStarCatalogue.Stars" OnSelectionChanged=setViaSearch />
+            </div>
+        </div>
+        <div class="w3-row w3-padding">
+            <div class="w3-col s6 w3-left-align">
+                <button class="w3-button w3-red" @onclick=cancel>Cancel</button>
+            </div>
+            <div class="w3-col s6 w3-right-align">
+                <button class="w3-button w3-green" @onclick=confirm>Confirm</button>
+            </div>
+        </div>
+    </div>
+</Popup>
+
+@code {
+
+    private double ra;
+    private double dec;
+
+    private double savedRa;
+    private double savedDec;
+
+    private Popup popup;
+    private bool UseJNow = false;
+    private bool UseJ2000 {
+        get => !UseJNow;
+        set => UseJNow = !value;
+    }
+    private bool savedJ = false;
+
+    [Parameter]
+    public Action<bool, double, double> OnOrientationChanged {get; set;}
+
+    public void Show() {
+        popup.Show();
+        ra = savedRa;
+        dec = savedDec;
+        UseJNow = savedJ;
+    }
+
+    public void Hide() {
+        popup.Hide();
+    }
+
+    private void setViaSearch(AlignmentStar star) {
+        UseJ2000 = true;
+        this.ra = star.J2000Ra;
+        this.dec = star.J2000Dec;
+        StateHasChanged();
+    }
+
+    private void cancel() {
+        Hide();
+    }
+
+    private void confirm() {
+        savedRa = ra;
+        savedDec = dec;
+        savedJ = UseJNow;
+        OnOrientationChanged?.Invoke(savedJ, savedRa, savedDec);
+        Hide();
+    }
+}

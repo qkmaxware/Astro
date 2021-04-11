@@ -56,7 +56,7 @@ public class TwoLineElementDeserializer {
                     i: Angle.Degrees(inc),
                     e: e,
                     Ω: Angle.Degrees(ra),
-                    ω: Angle.Degrees(pa),
+                    w: Angle.Degrees(pa),
                     anomalyType: AnomalyType.Mean,
                     anomalyValue: Angle.Degrees(mean)
                 )

@@ -17,7 +17,9 @@ public enum Direction {
 public class IndiTelescopeController {
     private IndiDevice device;
 
-    public bool IsAligned {get; private set;} = false;
+    public bool IsPositioned {get; private set;}
+    public bool IsOrientated {get; private set;}
+    public bool IsAligned => IsPositioned && IsOrientated;
 
     public IndiTelescopeController(IndiDevice device) {
         this.device = device;
@@ -86,48 +88,27 @@ public class IndiTelescopeController {
             setMode("SYNC");
     }
 
-    // TODO
-    /*public void Align(IAlignmentModel model) {
-        // Send Sync command
-        syncNext();
-        // Send current position
-        var ra = model.JNowRa();
-        var dec = model.JNowDec();
-        // TODO 
-        // Mark aligned
-        this.IsAligned = true;
-    }
-
-    public void Track(double ra, double dec) {
-        if (!IsAligned) {
-            throw new Exception("Unable to track object until the telescope is aligned");
+    public void SetTimeToClient() {
+        var vector = this.getProp<IndiVector<IndiTextValue>>(IndiStandardProperties.LocalUtcTime);
+        var time = DateTime.Now;
+        if (vector.IsWritable) {
+            vector.GetItemWithName("UTC").Value = time.ToUniversalTime().ToShortTimeString();
+            vector.GetItemWithName("OFFSET").Value = TimeZoneInfo.Local.GetUtcOffset(time).TotalHours.ToString();
+            device.ChangeRemoteProperty(vector.Name, vector);
         }
-        trackNext();
-        var property = goto_jnow_property or goto_j2000_property;
-        var vector = new IndiVector<IndiNumberValue>(property);
-        vector.Add(new IndiNumberValue{
-            Name = "RA",
-            Value = ra,
-            Min = -90,
-            Max = 90,
-            Step = 0.01,
-        });
-        vector.Add(new IndiNumberValue{
-            Name = "DEC",
-            Value = dec,
-            Min = -180,
-            Max = 180,
-            Step = 0.01,
-        });
-        device.UpdateProperty(property, vector);
-    }*/
-
-    public void ResetRotation() {
-        Goto(0, 0);    
     }
 
-    public void Goto(double alt, double az) {
-        throw new System.NotImplementedException();
+    public void SetOrientation(double ra, double dec, bool J2000 = false) {
+        var vector = this.getProp<IndiVector<IndiNumberValue>>(
+            J2000 
+            ? IndiStandardProperties.TelescopeJ2000EquatorialCoordinate 
+            : IndiStandardProperties.TelescopeJNowEquatorialCoordinate
+        );
+        syncNext();
+        vector.GetItemWithName("RA").Value = ra;
+        vector.GetItemWithName("DEC").Value = dec;
+        device.ChangeRemoteProperty(vector.Name, vector);
+        this.IsOrientated = true;
     }
 
     public void SetLocation(double lat, double lon, double alt) {
@@ -136,6 +117,7 @@ public class IndiTelescopeController {
         vector.GetItemWithName("LONG").Value = lon;
         vector.GetItemWithName("ELEV").Value = Math.Max(0, alt);
         device.ChangeRemoteProperty(vector.Name, vector);
+        this.IsPositioned = true;
     }
 
     public void SetSlewRate(SlewRate rate) {

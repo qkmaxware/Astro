@@ -44,7 +44,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -54,20 +54,20 @@
      id="layer1">
     <g
        id="g1430"
-       style="fill:#ffffff">
+       style="fill:#ffffff;stroke:#ffffff">
       <path
          style="fill:#ffffff;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
          d="M 7,15 17,25 C 15,27 12,32 6,26 1,21 3.9500619,18.378503 7,15 Z"
          id="path1424"
          sodipodi:nodetypes="cccc" />
       <path
-         style="fill:#ffffff;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="fill:#ffffff;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="M 5.9375,25.892857 2.9017857,29.196429"
          id="path1426" />
     </g>
     <g
        id="g1462"
-       style="fill:#ffffff">
+       style="fill:#ffffff;stroke:#ffffff">
       <g
          id="g1430-1"
          transform="rotate(180,15.997682,16.197812)"
@@ -78,16 +78,16 @@
            id="path1424-8"
            sodipodi:nodetypes="cccc" />
         <path
-           style="fill:#ffffff;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+           style="fill:#ffffff;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
            d="M 5.9375,25.892857 2.9017857,29.196429"
            id="path1426-8" />
       </g>
       <path
-         style="fill:#ffffff;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="fill:#ffffff;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="M 14.196429,13.973214 17.857143,10.3125"
          id="path1453" />
       <path
-         style="fill:#ffffff;stroke:#ffffff;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+         style="fill:#ffffff;stroke:#ffffff;stroke-width:2;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
          d="m 18.125,17.8125 3.526786,-3.660714"
          id="path1455" />
     </g>

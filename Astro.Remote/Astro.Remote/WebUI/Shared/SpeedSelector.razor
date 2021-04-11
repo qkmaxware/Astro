@@ -1,0 +1,66 @@
+<Popup @ref=popup>
+    <div class="w3-padding">
+        <div class="w3-row-padding">
+            <div class="w3-col w3-right-align" style="width: 128px;">
+                <img src="/assets/speed.svg" width=32 height=32>
+            </div>
+            <div class="w3-rest">
+                &nbsp;
+            </div>
+        </div>
+
+        <div class="w3-row-padding">
+            <div class="w3-col w3-right-align" style="width: 128px;">
+                <div style="display:inline-block; width: 25%; background-color: green">&nbsp;</div>
+            </div>
+            <div class="w3-rest">
+                <button class="w3-button w3-block w3-left-align @(rate == SlewRate.Guide ? "w3-blue" : string.Empty)" @onclick=@(() => setSpeed(SlewRate.Guide))>Guide</button>
+            </div>
+        </div>
+        <div class="w3-row-padding">
+            <div class="w3-col w3-right-align" style=" width: 128px;">
+                <div style="display:inline-block; width: 50%; background-color: yellow">&nbsp;</div>
+            </div>
+            <div class="w3-rest">
+                <button class="w3-button w3-block w3-left-align @(rate == SlewRate.Centering ? "w3-blue" : string.Empty)" @onclick=@(() => setSpeed(SlewRate.Centering))>Centering</button>
+            </div>
+        </div>
+        <div class="w3-row-padding">
+            <div class="w3-col w3-right-align" style="width: 128px;">
+                <div style="display:inline-block; width: 75%; background-color: orange">&nbsp;</div>
+            </div>
+            <div class="w3-rest">
+                <button class="w3-button w3-block w3-left-align @(rate == SlewRate.Find ? "w3-blue" : string.Empty)" @onclick=@(() => setSpeed(SlewRate.Find))>Find</button>
+            </div>
+        </div>
+        <div class="w3-row-padding">
+            <div class="w3-col w3-right-align" style="width: 128px;">
+                <div style="display:inline-block; width: 100%; background-color: red">&nbsp;</div>
+            </div>
+            <div class="w3-rest">
+                <button class="w3-button w3-block w3-left-align @(rate == SlewRate.Max ? "w3-blue" : string.Empty)" @onclick=@(() => setSpeed(SlewRate.Max))>Max</button>
+            </div>
+        </div>
+    </div>
+</Popup>
+
+@code {
+    private SlewRate rate = SlewRate.Guide;
+    [Parameter]
+    public Action<SlewRate> OnSpeedChange {get; set;}
+    private Popup popup;
+
+    public void Show() {
+        popup.Show();
+    }
+
+    public void Hide() {
+        popup.Hide();
+    }
+
+    private void setSpeed(SlewRate rate) {
+        this.rate = rate;
+        OnSpeedChange?.Invoke(rate);
+        Hide();
+    }
+}

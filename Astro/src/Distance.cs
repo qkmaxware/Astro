@@ -1,22 +1,11 @@
 using System;
-using System.Text.Json.Serialization;
 using Qkmaxware.Astro.Arithmetic;
 
 namespace Qkmaxware.Astro {
 
 /// <summary>
-/// Json converter for distance quantities
-/// </summary>
-public class DistanceJsonConverter : QuantityJsonConverter<Distance> {
-	public override string GetSuffix() => "km";
-    public override Distance ParseQuantity(double quant) => Distance.Kilometres(quant);
-    public override double GetQuantity(Distance value) => value.TotalKilometres;
-}
-
-/// <summary>
 /// Class representing astronomical distances
 /// </summary>
-[JsonConverter(typeof(DistanceJsonConverter))]
 public class Distance : IArithmeticValue<Distance> {
 
     private double value; //km

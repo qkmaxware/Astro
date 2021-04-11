@@ -1,22 +1,11 @@
 using System;
-using System.Text.Json.Serialization;
 using Qkmaxware.Astro.Arithmetic;
 
 namespace Qkmaxware.Astro {
 
 /// <summary>
-/// Json converter for distance quantities
-/// </summary>
-public class SpeedJsonConverter : QuantityJsonConverter<Speed> {
-	public override string GetSuffix() => "m/s";
-    public override Speed ParseQuantity(double quant) => Speed.MetresPerSecond(quant);
-    public override double GetQuantity(Speed value) => value.TotalMetresPerSecond;
-}
-
-/// <summary>
 /// Measurement of the speed of astronomical objects
 /// </summary>
-[JsonConverter(typeof(SpeedJsonConverter))]
 public class Speed : IArithmeticValue<Speed> {
     private double value;
 

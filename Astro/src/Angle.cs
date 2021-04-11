@@ -1,21 +1,8 @@
 using System;
 using Qkmaxware.Astro.Arithmetic;
-using System.Text.Json.Serialization;
-using System.Text.Json;
 
 namespace Qkmaxware.Astro {
 
-/// <summary>
-/// Json converter for angular quantities
-/// </summary>
-public class AngleJsonConverter : QuantityJsonConverter<Angle> {
-	public override string GetSuffix() => "deg";
-    public override Angle ParseQuantity(double quant) => Angle.Degrees(quant);
-    public override double GetQuantity(Angle value) => value.TotalDegrees;
-}
-	
-
-[JsonConverter(typeof(AngleJsonConverter))]
 /// </summary>
 /// Angluar measurement
 /// </summary>
@@ -163,11 +150,11 @@ public class Angle : IArithmeticValue<Angle> {
 	}
 
 	/// <summary>
-	/// Create an angle measured in turns
+	/// Create an angle from a given number of revolutions
 	/// </summary>
 	/// <param name="turns">number of turns</param>
 	/// <returns>angle</returns>
-	public static Angle Turns (double turns) {
+	public static Angle Revolutions (double turns) {
 		return new Angle(360 * turns);
 	}
 

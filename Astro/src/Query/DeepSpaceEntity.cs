@@ -37,7 +37,7 @@ public class DeepSpaceEntity : CataloguedEntity {
     /// </summary>
     /// <param name="time">time to advance</param>
     /// <returns>coordinates at the new time</returns>
-    public CelestialCoordinate? PositionAfter(TimeSpan time) {
+    public CelestialCoordinate? PositionAfter(Duration time) {
         if (this.Coordinates == null || this.Coordinates.RightAscension == null || this.Coordinates.Declination == null)
             return null;                // No coordinates
         if (this.Coordinates.ProperMotion == null)
