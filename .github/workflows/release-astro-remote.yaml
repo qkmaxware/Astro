@@ -95,7 +95,7 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.Android
         dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.Android.csproj /restore /property:Configuration=Release
+        dotnet publish -c Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 

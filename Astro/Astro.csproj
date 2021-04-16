@@ -9,7 +9,7 @@
     <RepositoryUrl>https://github.com/qkmaxware/Astro.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageDescription>
-      Qkmaxware.Astro is a library of tools for astronomical caclulations and quering
+      Qkmaxware.Astro is a library of tools for astronomical calculations and querying
     </PackageDescription>
     <PackageOutputPath>./../nupkg</PackageOutputPath>
 
