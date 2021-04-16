@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<VOTABLE xmlns="http://www.ivoa.net/xml/VOTable/v1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" ID="http://www.ivoa.net/xml/VOTable/v1.2 http://www.ivoa.net/xml/VOTable/v1.2">
+<DEFINITIONS>
+<COOSYS ID="COOSYS" equinox="2000" epoch="J2000" system="ICRS"/>
+</DEFINITIONS>
+<RESOURCE name="Simbad query" type="results">
+<TABLE ID="SimbadScript" name="vot1"><DESCRIPTION>Simbad script executed on 2021.04.16CEST17:53:09</DESCRIPTION>
+<FIELD ID="MAIN_ID" name="MAIN_ID" datatype="char" width="22" ucd="meta.id;meta.main" arraysize="*">
+<DESCRIPTION>Main identifier for an object</DESCRIPTION>
+<LINK value="${MAIN_ID}" href="http://simbad.u-strasbg.fr/simbad/sim-id?Ident=${MAIN_ID}&amp;NbIdent=1"/>
+</FIELD>
+<FIELD ID="OTYPE" name="OTYPE" datatype="char" width="8" ucd="src.class" arraysize="*">
+<DESCRIPTION>Object type</DESCRIPTION>
+<LINK href="http://simbad.u-strasbg.fr/simbad/sim-display?data=otypes"/>
+</FIELD>
+<FIELD ID="RA_d" name="RA_d" datatype="double" precision="8" width="11" ucd="pos.eq.ra;meta.main" unit="deg">
+<DESCRIPTION>Right ascension</DESCRIPTION>
+</FIELD>
+<FIELD ID="DEC_d" name="DEC_d" datatype="double" precision="8" width="12" ucd="pos.eq.dec;meta.main" unit="deg">
+<DESCRIPTION>Declination</DESCRIPTION>
+</FIELD>
+<FIELD ID="PMRA" name="PMRA" datatype="double" precision="3" width="9" ucd="pos.pm;pos.eq.ra" unit="mas.yr-1">
+<DESCRIPTION>Proper motion in RA</DESCRIPTION>
+</FIELD>
+<FIELD ID="PMDEC" name="PMDEC" datatype="double" precision="3" width="9" ucd="pos.pm;pos.eq.dec" unit="mas.yr-1">
+<DESCRIPTION>Proper motion in DEC</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_distance" name="Distance:distance" datatype="double" precision="4" width="10" ucd="POS.DISTANCE">
+<DESCRIPTION>Distance value</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_Q" name="Distance:Q" datatype="char" width="1" ucd="META.CODE.QUAL" arraysize="1">
+<DESCRIPTION>Quality</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_unit" name="Distance:unit" datatype="char" width="4" ucd="META.UNIT" arraysize="4">
+<DESCRIPTION>Unit (pc,kpc or Mpc)</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_merr" name="Distance:merr" datatype="double" precision="4" width="9" ucd="STAT.ERROR">
+<DESCRIPTION>minus error</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_perr" name="Distance:perr" datatype="double" precision="4" width="9" ucd="STAT.ERROR">
+<DESCRIPTION>plus error</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_method" name="Distance:method" datatype="char" width="8" ucd="INSTR.SETUP" arraysize="8">
+<DESCRIPTION>distance calculation method</DESCRIPTION>
+</FIELD>
+<FIELD ID="Distance_bibcode" name="Distance:bibcode" datatype="char" width="19" ucd="META.BIB.BIBCODE" arraysize="19">
+<DESCRIPTION>Bibcode</DESCRIPTION>
+</FIELD>
+<DATA>
+<TABLEDATA>
+<TR><TD>* alf Cen</TD><TD>**</TD><TD>219.87383306</TD><TD>-60.83222194</TD><TD>-3608</TD><TD>686</TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD><TD></TD></TR>
+
+</TABLEDATA>
+
+</DATA>
+</TABLE>
+</RESOURCE>
+</VOTABLE>
+

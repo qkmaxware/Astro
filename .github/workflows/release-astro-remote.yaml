@@ -25,7 +25,7 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.Windows
         dotnet restore --configfile "..\..\nuget.config"
-        dotnet publish -c Release
+        msbuild Astro.Remote.Windows.csproj /restore /property:Configuration=Release
     - name: Compress
       uses: thedoctor0/zip-release@master
       with: 

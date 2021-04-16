@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="32.0px"
+   height="32.0px"
+   viewBox="0 0 32.0 32.0"
+   version="1.1"
+   id="SVGRoot"
+   sodipodi:docname="station.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <defs
+     id="defs833" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="11.2"
+     inkscape:cx="10.969078"
+     inkscape:cy="21.973533"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     inkscape:document-rotation="0"
+     showgrid="true"
+     inkscape:window-width="1680"
+     inkscape:window-height="987"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:pagecheckerboard="false" />
+  <metadata
+     id="metadata836">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <path
+       id="rect951"
+       style="fill:#ffffff;stroke:#ffffff;stroke-width:0;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 2.9042969,5.6191406 v 8.2070314 h 1.0742187 v 1.453125 1.009765 1.453126 H 2.9042969 v 8.207031 H 5.6835938 V 17.742188 H 4.609375 v -1.453126 h 3.2011719 v 1.453126 H 6.734375 v 8.207031 H 9.5136719 V 17.742188 H 8.4394531 v -1.453126 h 3.4707029 v 0.757813 h 3.16211 V 19.34375 H 10.59375 v 1.355469 H 22.337891 V 19.34375 h -4.779297 v -2.296875 h 3.5 v -0.757813 h 3.501953 v 1.453126 h -1.074219 v 8.207031 h 2.779297 v -8.207031 h -1.074219 v -1.453126 h 3.03125 v 1.453126 h -1.074218 v 8.207031 h 2.779296 v -8.207031 h -1.074218 v -1.453126 -1.009765 -1.453125 h 1.074218 V 5.6191406 h -2.779296 v 8.2070314 h 1.074218 v 1.453125 h -3.03125 v -1.453125 h 1.074219 V 5.6191406 h -2.779297 v 8.2070314 h 1.074219 v 1.453125 h -3.501953 v -0.566406 h -3.5 v -2.294922 h 4.666015 v -1.242188 h -11.74414 v 1.242188 h 4.591797 v 2.294922 h -3.16211 v 0.566406 H 8.3066406 V 13.826172 H 9.3808594 V 5.6191406 H 6.6015625 v 8.2070314 h 1.0742187 v 1.453125 H 4.609375 V 13.826172 H 5.6835938 V 5.6191406 Z" />
+  </g>
+</svg>

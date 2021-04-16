@@ -26,7 +26,7 @@ jobs:
         cd Astro.Remote
         cd Astro.Remote.Windows
         dotnet restore --configfile "..\..\nuget.config"
-        dotnet publish -c Release
+        msbuild Astro.Remote.Windows.csproj /restore /property:Configuration=Release
 
   MacOS:
     runs-on: ${{ matrix.os }}

@@ -23,7 +23,7 @@ public class MassTest {
     public void TestLargeMass() {
         var sun = Mass.Kilograms(1.989e30);
         Assert.AreEqual(1.989e30, sun.TotalKilograms);
-        Assert.AreEqual(1.327124400e20, sun.μ, 0.001);
+        Assert.AreEqual(1.327124400e20, sun.μ, 1e17);
     }
 
 }

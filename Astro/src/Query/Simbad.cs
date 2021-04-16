@@ -8,6 +8,19 @@ using Qkmaxware.Astro.IO;
 namespace Qkmaxware.Astro.Query {
 
 /// <summary>
+/// Entity queried from the Simbad Database
+/// </summary>
+public class SimbadEntity : DeepSpaceEntity {
+    /// <summary>
+    /// Classification of the given object type
+    /// </summary>
+    public string Class {get; private set;}
+    public SimbadEntity(string name, string type, Moment epoch, CelestialCoordinate coordinate) : base(name, epoch, coordinate) {
+        this.Class = type;
+    }
+}
+
+/// <summary>
 /// Interface to the Simbad Astronomical API
 /// </summary>
 public static class Simbad {
@@ -28,7 +41,7 @@ public static class Simbad {
         return response;
     }
 
-    private static IEnumerable<DeepSpaceEntity> sendQuery(string url, Dictionary<string, string>? uri_parametres = null) {
+    private static IEnumerable<SimbadEntity> sendQuery(string url, Dictionary<string, string>? uri_parametres = null) {
         // Configure URL parametres
         var builder = new UriBuilder(url);
         if (uri_parametres != null) {
@@ -46,10 +59,14 @@ public static class Simbad {
             var response = blocker.Invoke(() => sendGet(web, builder));
             Regex rgx = new Regex(":+data:+");
             var parts = rgx.Split(response ?? string.Empty); // Jump to the data section
+            if (parts.Length < 2) {
+                yield break;
+            }
+            var data = parts[parts.Length - 1].TrimStart();
 
             // Parse XML votable output to data structure
             var deserializer = new VOTableDeserializer(); 
-            var votable = deserializer.Deserialize(new StringReader(parts[parts.Length - 1].TrimStart()));
+            var votable = deserializer.Deserialize(new StringReader(data));
 
             // Convert VOTable to Simbad.Entry
             var epoch = string.IsNullOrEmpty(votable.Epoch) ? Moment.J2000 : Moment.FromJulianYear(int.Parse(votable.Epoch.Substring(1)));
@@ -102,9 +119,9 @@ public static class Simbad {
                     // Compute object type
 
                     // Return
-                    yield return new DeepSpaceEntity(
+                    yield return new SimbadEntity(
                         name:       table[row, "MAIN_ID"],
-                        // type:       type,
+                        type:       table.SelectFirstNonEmpty(row, "maintype", "MAINTYPE", "otype", "OTYPE"),
                         epoch:      epoch,
                         coordinate: new CelestialCoordinate(
                             distance:   dist,
@@ -138,34 +155,34 @@ query " + query;
         return script;
     }
 
-    public static IEnumerable<DeepSpaceEntity> FromScript(string script) {
+    public static IEnumerable<SimbadEntity> FromScript(string script) {
         return sendQuery(ScriptQuery, new Dictionary<string, string>{
             {"script", script},
         });
     }
 
-    public static IEnumerable<DeepSpaceEntity> WithIdentifier(string id) {
+    public static IEnumerable<SimbadEntity> WithIdentifier(string id) {
         var query = makeQueryString($"id {id}");
         return FromScript(query);
     }
 
-    public static IEnumerable<DeepSpaceEntity> WithinDistance(Distance distance) {
+    public static IEnumerable<SimbadEntity> WithinDistance(Distance distance) {
         return WithCriteria ($"Distance.unit='pc' & Distance.distance={distance.TotalParsecs}");
     }
 
-    public static IEnumerable<DeepSpaceEntity> WithCriteria(string query) {
-        return FromScript($"sample {query}");
+    public static IEnumerable<SimbadEntity> WithCriteria(string query) {
+        return FromScript(makeQueryString($"sample {query}"));
     }
 
-    public static IEnumerable<DeepSpaceEntity> FromCatalogue(string catalogue) {
-        return FromScript($"cat {catalogue}");
+    public static IEnumerable<SimbadEntity> FromCatalogue(string catalogue) {
+        return FromScript(makeQueryString($"cat {catalogue}"));
     }
 
-    public static IEnumerable<DeepSpaceEntity> MessierCatalogue() {
+    public static IEnumerable<SimbadEntity> MessierCatalogue() {
         return FromCatalogue("messier");
     }
 
-    public static IEnumerable<DeepSpaceEntity> NewGeneralCatalogue() {
+    public static IEnumerable<SimbadEntity> NewGeneralCatalogue() {
         return FromCatalogue("ngc");
     }
 

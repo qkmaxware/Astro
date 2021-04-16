@@ -58,7 +58,7 @@
 
 <AlignmentPicker @ref=orientation OnOrientationChanged=telescopeSetOrientation></AlignmentPicker>
 
-<GotoDialog @ref=track></GotoDialog>
+<GotoDialog @ref=track OnGoto=telescopeGoto></GotoDialog>
 
 }
 
@@ -66,7 +66,7 @@
 
 @code {
     private bool reconnect = false;
-    private bool forceShowGoto = false;
+    private bool forceShowGoto = true;
     private DeviceSetup devices;
     private IndiTelescopeController telescope;
     private Dialog dialog;
@@ -144,7 +144,21 @@
     private void telescopeSetOrientation(bool JNow, double ra, double dec) {
         try {
             if (telescope != null) {
+                // Say we are looking at THIS star at THIS time
                 telescope.SetOrientation(ra, dec, J2000: !JNow);
+                telescope.SetTimeToClient(); // Update the local time of the app to match the phone time
+            } else {
+                throw new Exception("No telescope");
+            }
+        } catch (Exception e) {
+            dialog.Show("Error", e.Message);
+        }
+    }
+
+    private void telescopeGoto(double raDegrees, double decDegrees) {
+        try {
+            if (telescope != null) {
+                telescope.Goto(raDegrees, decDegrees, J2000: true);
             } else {
                 throw new Exception("No telescope");
             }

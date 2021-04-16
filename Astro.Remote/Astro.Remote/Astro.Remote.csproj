@@ -28,5 +28,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Astro.Control\Astro.Control.csproj" />
+    <ProjectReference Include="..\..\Astro\Astro.csproj" />
   </ItemGroup>
 </Project>

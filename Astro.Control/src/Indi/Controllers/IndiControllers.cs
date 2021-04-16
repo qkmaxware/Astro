@@ -142,6 +142,18 @@ public class IndiTelescopeController {
         vector.GetSwitch("MOTION_SOUTH").Value = motion == Direction.South || motion == Direction.SouthEast || motion == Direction.SouthWest;
         device.ChangeRemoteProperty(vector.Name, vector);
     }
+
+    public void Goto(double raDegrees, double decDegrees, bool J2000 = false) {
+        var vector = this.getProp<IndiVector<IndiNumberValue>>(
+            J2000 
+            ? IndiStandardProperties.TelescopeJ2000EquatorialCoordinate 
+            : IndiStandardProperties.TelescopeJNowEquatorialCoordinate
+        );
+        slewNext();
+        vector.GetItemWithName("RA").Value = raDegrees;
+        vector.GetItemWithName("DEC").Value = decDegrees;
+        device.ChangeRemoteProperty(vector.Name, vector);
+    }
 }
 
 }
