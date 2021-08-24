@@ -1,7 +1,67 @@
 using System;
 using System.Globalization;
+using Qkmaxware.Measurement;
+using Qkmaxware.Numbers;
 
 namespace Qkmaxware.Astro {
+
+public class Timestamp {
+    public Timestamp(int year, Month month, int day, int hour, int minute, int second, int millisecond) {
+        this.Year = year;
+        this.Month = month;
+        this.Day = day;
+        this.Minute = minute;
+        this.Second = second;
+        this.Millisecond = millisecond;
+    }
+
+    /// <summary>
+    /// Year
+    /// </summary>
+    /// <value>year</value>
+    public int Year {get; }
+    /// <summary>
+    /// Month
+    /// </summary>
+    /// <value>month</value>
+    public Month Month {get;}
+    /// <summary>
+    /// Day
+    /// </summary>
+    /// <value>days</value>
+    public int Day {get;}
+    /// <summary>
+    /// Hours
+    /// </summary>
+    /// <value>hours</value>
+    public int Hour {get;}
+    /// <summary>
+    /// Minutes
+    /// </summary>
+    /// <value>minutes</value>
+    public int Minute {get;}
+    /// <summary>
+    /// Seconds
+    /// </summary>
+    /// <value>seconds</value>
+    public int Second {get;}
+    /// <summary>
+    /// Milliseconds
+    /// </summary>
+    /// <value>milliseconds</value>
+    public int Millisecond {get;}
+
+    /// <summary>
+    /// Fractional Day within the month
+    /// </summary>
+    /// <returns>fractional days in the month</returns>
+    public double FractionalDay => Day + (Hour / 24.0) + (Minute / 1440.0) + (Second + Millisecond / 1000.0) / 86400.0;
+    /// <summary>
+    /// Fractional hour within the day
+    /// </summary>
+    /// <returns>fractional hour during the day</returns>
+    public double FractionalHour => (Hour / 24.0) + (Minute / 1440.0) + (Second + Millisecond / 1000.0) / 86400.0;
+}
 
 /// <summary>
 /// Specific moment in time, internally stored in UTC for astronomical computations
@@ -21,65 +81,43 @@ public struct Moment {
     public static Moment Now => new Moment(DateTime.Now);
 
     /// <summary>
-    /// UTC Year
+    /// Timestamp in UTC 
     /// </summary>
-    /// <value>year</value>
-    public int Year {get; }
+    /// <value>utc date-time timestamp</value>
+    public Timestamp UtcTimestamp {get; private set;}
+
     /// <summary>
-    /// UTC Month
+    /// Timestamp in Local Time 
     /// </summary>
-    /// <value>month</value>
-    public Month Month {get;}
-    /// <summary>
-    /// UTC Days
-    /// </summary>
-    /// <value>days</value>
-    public int Day {get;}
-    /// <summary>
-    /// Day of the week
-    /// </summary>
-    /// <returns>monday through sunday</returns>
-    public System.DayOfWeek DayOfWeek => ((DateTime)this).DayOfWeek;
-    /// <summary>
-    /// Fractional UTC Day
-    /// </summary>
-    /// <returns>fractional days in the moth</returns>
-    public double FractionalDay => Day + (Hour / 24.0) + (Minute / 1440.0) + (Second + Millisecond / 1000.0) / 86400.0;
-    /// <summary>
-    /// UTC Hours
-    /// </summary>
-    /// <value>hours</value>
-    public int Hour {get;}
-    /// <summary>
-    /// UTC Minutes
-    /// </summary>
-    /// <value>minutes</value>
-    public int Minute {get;}
-    /// <summary>
-    /// UTC Seconds
-    /// </summary>
-    /// <value>seconds</value>
-    public int Second {get;}
-    /// <summary>
-    /// UTC Milliseconds
-    /// </summary>
-    /// <value>milliseconds</value>
-    public int Millisecond {get;}
+    /// <value>local date-time timestamp</value>
+    public Timestamp LocalTimestamp {get; private set;}
 
     /// <summary>
     /// Create a moment from a date-time object
     /// </summary>
     /// <param name="dt">date-time</param>
     public Moment(DateTime dt) {
-        dt = dt.ToUniversalTime(); // Convert TO UTC first?
+        var utc = dt.ToUniversalTime();
+        this.UtcTimestamp = new Timestamp(
+            year:           utc.Year,
+            month:          (Month)utc.Month,
+            day:            utc.Day,
+            hour:           utc.Hour,
+            minute:         utc.Minute,
+            second:         utc.Second,
+            millisecond:    utc.Millisecond
+        );
 
-        this.Year = dt.Year;
-        this.Month = (Month)dt.Month;
-        this.Day = dt.Day;
-        this.Hour = dt.Hour;
-        this.Minute = dt.Minute;
-        this.Second = dt.Second;
-        this.Millisecond = dt.Millisecond;
+        var local = dt.ToLocalTime();
+        this.LocalTimestamp = new Timestamp(
+            year:           local.Year,
+            month:          (Month)local.Month,
+            day:            local.Day,
+            hour:           local.Hour,
+            minute:         local.Minute,
+            second:         local.Second,
+            millisecond:    local.Millisecond
+        );
     }
 
     /// <summary>
@@ -93,13 +131,27 @@ public struct Moment {
     /// <param name="second">second</param>
     /// <param name="millisecond">millisecond</param>
     public Moment(int year, Month month, int day, int hour = 0, int minute = 0, int second = 0, int millisecond = 0){
-        this.Year = year;
-        this.Month = month;
-        this.Day = day;
-        this.Hour = hour;
-        this.Minute = minute;
-        this.Second = second;
-        this.Millisecond = millisecond;
+        DateTime utc = new DateTime(year, (int)month, day, hour, minute, second, millisecond, new GregorianCalendar(), DateTimeKind.Utc);
+        this.UtcTimestamp = new Timestamp(
+            year:           utc.Year,
+            month:          (Month)utc.Month,
+            day:            utc.Day,
+            hour:           utc.Hour,
+            minute:         utc.Minute,
+            second:         utc.Second,
+            millisecond:    utc.Millisecond
+        );
+
+        var local = utc.ToLocalTime();
+        this.LocalTimestamp = new Timestamp(
+            year:           local.Year,
+            month:          (Month)local.Month,
+            day:            local.Day,
+            hour:           local.Hour,
+            minute:         local.Minute,
+            second:         local.Second,
+            millisecond:    local.Millisecond
+        );
     }
 
     /// <summary>
@@ -109,15 +161,34 @@ public struct Moment {
     /// <param name="month">month</param>
     /// <param name="fractionalDays">fractional days</param>
     public Moment(int year, Month month, double fractionalDays){
-        this.Year = year;
-        this.Month = month;
-
         var ts = TimeSpan.FromDays(fractionalDays);
-        this.Day = ts.Days;
-        this.Hour = ts.Hours;
-        this.Minute = ts.Minutes;
-        this.Second = ts.Seconds;
-        this.Millisecond = ts.Milliseconds;
+        var day = ts.Days;
+        var hour = ts.Hours;
+        var minute = ts.Minutes;
+        var second = ts.Seconds;
+        var millisecond = ts.Milliseconds;
+
+        DateTime utc = new DateTime(year, (int)month, day, hour, minute, second, millisecond, new GregorianCalendar(), DateTimeKind.Utc);
+        this.UtcTimestamp = new Timestamp(
+            year:           utc.Year,
+            month:          (Month)utc.Month,
+            day:            utc.Day,
+            hour:           utc.Hour,
+            minute:         utc.Minute,
+            second:         utc.Second,
+            millisecond:    utc.Millisecond
+        );
+
+        var local = utc.ToLocalTime();
+        this.LocalTimestamp = new Timestamp(
+            year:           local.Year,
+            month:          (Month)local.Month,
+            day:            local.Day,
+            hour:           local.Hour,
+            minute:         local.Minute,
+            second:         local.Second,
+            millisecond:    local.Millisecond
+        );
     }
 
     /// <summary>
@@ -126,8 +197,8 @@ public struct Moment {
     /// <value>julian day</value>
     public double JulianDay {
         get {
-            int Y = Year;
-            int M = (int)Month;
+            int Y = UtcTimestamp.Year;
+            int M = (int)UtcTimestamp.Month;
             double B = 0; // Julian calendar default
 
             // if the date is Jan or Feb then it is considered to be in the 
@@ -147,7 +218,7 @@ public struct Moment {
             double A = Math.Floor(Y / 100.0);
             B = 2 - A + Math.Floor(A / 4);
 
-            return Math.Floor(365.25 * (Y + 4716)) + Math.Floor(30.6001 * (M + 1)) + FractionalDay + B - 1524.5;
+            return Math.Floor(365.25 * (Y + 4716)) + Math.Floor(30.6001 * (M + 1)) + UtcTimestamp.FractionalDay + B - 1524.5;
         }
     }
 
@@ -189,12 +260,24 @@ public struct Moment {
         return TimeSpan.FromHours(theta/15);
     }
 
+    /*
+    public Moment? Sunrise(Angle latitude, Angle longitude) {
+        var lat = latitude.TotalDegrees().Clamp(-89, 89);
+        var long = longitude.TotalDegrees() - 180;
+        var JD = this.JulianDay;
+
+    }
+
+    public Moment? Sunset(Angle latitude, Angle longitude) {
+
+    }*/
+
     /// <summary>
     /// Moment to string
     /// </summary>
     /// <returns>date string</returns>
     public override string ToString(){
-        DateTime dt = new DateTime(Year, (int)Month, Day, Hour, Minute, Second, DateTimeKind.Utc);
+        DateTime dt = new DateTime(UtcTimestamp.Year, (int)UtcTimestamp.Month, UtcTimestamp.Day, UtcTimestamp.Hour, UtcTimestamp.Minute, UtcTimestamp.Second, DateTimeKind.Utc);
         return dt.ToString("u");
     }
 
@@ -202,7 +285,9 @@ public struct Moment {
         return this.JulianDay.GetHashCode();
     }
 
-    public override bool Equals(object obj) {
+    public override bool Equals(object? obj) {
+        if (obj == null)
+            return false;
         return obj switch {
             Moment m2 => this.JulianDay == m2.JulianDay,
             _ => base.Equals(obj)
@@ -222,7 +307,7 @@ public struct Moment {
     /// </summary>
     /// <param name="moment">UTC moment</param>
     public static implicit operator DateTime(Moment moment) {
-        return new DateTime(moment.Year, (int)moment.Month, moment.Day, moment.Hour, moment.Minute, moment.Second, moment.Millisecond, new GregorianCalendar(), DateTimeKind.Utc);
+        return new DateTime(moment.UtcTimestamp.Year, (int)moment.UtcTimestamp.Month, moment.UtcTimestamp.Day, moment.UtcTimestamp.Hour, moment.UtcTimestamp.Minute, moment.UtcTimestamp.Second, moment.UtcTimestamp.Millisecond, new GregorianCalendar(), DateTimeKind.Utc);
     }
 
     /// <summary>
@@ -232,7 +317,8 @@ public struct Moment {
     /// <param name="end">ending time</param>
     /// <returns>time between start and end moments</returns>
     public static Duration operator - (Moment start, Moment end) {
-        return Duration.Hours((end.JulianDay - start.JulianDay) * 24);
+        Scientific hrs = (end.JulianDay - start.JulianDay) * 24;
+        return Duration.Hours(hrs.Abs());
     }
 
     /// <summary>

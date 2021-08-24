@@ -1,4 +1,5 @@
 using System;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro.Arithmetic {
 
@@ -181,7 +182,7 @@ public class Quat {
     /// <param name="roll">roll angle</param>
     /// <returns>quaternion</returns>
     public static Quat YawPitchRoll(Angle yaw, Angle pitch, Angle roll) {
-        return YawPitchRoll(yaw.TotalRadians, pitch.TotalRadians, roll.TotalRadians);
+        return YawPitchRoll((double)yaw.TotalRadians(), (double)pitch.TotalRadians(), (double)roll.TotalRadians());
     }
 
     /// <summary>

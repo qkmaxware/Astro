@@ -1,5 +1,7 @@
 using System;
 using Qkmaxware.Astro.Arithmetic;
+using Qkmaxware.Measurement;
+using Qkmaxware.Numbers;
 
 namespace Qkmaxware.Astro.Dynamics {
 

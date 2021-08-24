@@ -1,0 +1,15 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Update="electron.manifest.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="ElectronNET.API" Version="13.5.1" />
+    <ProjectReference Include="..\..\Astro.Control\Astro.Control.csproj" />
+    <ProjectReference Include="..\..\Astro\Astro.csproj" />
+  </ItemGroup>
+</Project>

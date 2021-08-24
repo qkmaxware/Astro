@@ -1,5 +1,7 @@
 using System;
 using Qkmaxware.Astro.Arithmetic;
+using Qkmaxware.Measurement;
+using Qkmaxware.Numbers;
 
 namespace Qkmaxware.Astro.Dynamics {
 
@@ -16,9 +18,9 @@ public class OrbitalPropagator {
 
     public OrbitalPropagator Delay(Duration duration) {
         var mm = this.SatelliteOrbitalElements.MeanMotion(this.ParentMass);
-        var rate = mm.Amount.TotalRadians / mm.Duration.TotalSeconds;
-        var position = this.SatelliteOrbitalElements.MeanAnomaly.TotalRadians;
-        var new_position = (position + rate * duration.TotalSeconds) % (2 * Math.PI);
+        var rate = mm.Amount.TotalRadians() / mm.Duration.TotalSeconds();
+        var position = this.SatelliteOrbitalElements.MeanAnomaly.TotalRadians();
+        var new_position = (double)(position + rate * duration.TotalSeconds()) % (2 * Math.PI);
         return new OrbitalPropagator(
             this.ParentMass,
             this.SatelliteMass,
@@ -43,7 +45,7 @@ public class OrbitalPropagator {
     public OrbitalPropagator AddRetrogradeDeltaV(Speed s) {
         var v = this.SatelliteOrbitalElements.CartesianVelocity(this.ParentMass).Normalized;
         var dv = s * v;
-        return AddDeltaV(-1 * dv);
+        return AddDeltaV(-dv);
     }
 
     public OrbitalPropagator AddDeltaV(Vec3<Speed> dv) {

@@ -2,7 +2,7 @@
   <img width="120" height="120" src="docs/images/logo.svg">
 </p>
 
-# Astro#
+# Qkmaxware.Astro
 Qkmaxware.Astro is a library of tools for astronomical calculations and querying as well as various derived applications for astronomical uses.
 
 ## Getting Started

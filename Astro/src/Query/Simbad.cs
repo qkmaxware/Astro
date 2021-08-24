@@ -4,6 +4,7 @@ using System.IO;
 using System.Net.Http;
 using System.Text.RegularExpressions;
 using Qkmaxware.Astro.IO;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro.Query {
 
@@ -75,13 +76,13 @@ public static class Simbad {
                     // Compute distance
                     var distanceUnit = table.SelectFirstNonEmpty(row, "Distance:unit", "Distance_unit");
                     string distanceString = table.SelectFirstNonEmpty(row, "Distance:distance",  "Distance_distance");
-                    Distance? dist = null;
+                    Length? dist = null;
                     if (!string.IsNullOrEmpty(distanceString)) {
                         var distance = double.Parse(distanceString);
                         dist = distanceUnit switch {
-                            "kpc" => Distance.Kiloparsecs(distance),
-                            "Mpc" => Distance.Megaparsecs(distance),
-                            _ => Distance.Parsecs(distance)
+                            "kpc"   => AstronomicalLength.Kiloparsecs(distance),
+                            "Mpc"   => AstronomicalLength.Megaparsecs(distance),
+                            _       => AstronomicalLength.Parsecs(distance)
                         };
                     }
 
@@ -166,8 +167,8 @@ query " + query;
         return FromScript(query);
     }
 
-    public static IEnumerable<SimbadEntity> WithinDistance(Distance distance) {
-        return WithCriteria ($"Distance.unit='pc' & Distance.distance={distance.TotalParsecs}");
+    public static IEnumerable<SimbadEntity> WithinDistance(Length distance) {
+        return WithCriteria ($"Distance.unit='pc' & Distance.distance={distance.TotalParsecs()}");
     }
 
     public static IEnumerable<SimbadEntity> WithCriteria(string query) {

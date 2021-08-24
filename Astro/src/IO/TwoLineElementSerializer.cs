@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Qkmaxware.Astro.Dynamics;
 using Qkmaxware.Astro.Query;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro.IO {
 
@@ -44,7 +45,7 @@ public class TwoLineElementDeserializer {
             double pa = double.Parse(line_2.Substring(34, 8));  // Degrees
             double mean = double.Parse(line_2.Substring(43, 8));// Degrees
 
-            var mu = parent.μ;
+            var mu = parent.μ();
             double rev_day = double.Parse(line_2.Substring(52, 11));
             double a = Math.Pow(mu, 1.0/3.0) / Math.Pow((2 * Math.PI * rev_day) / 86400, 2.0/3.0); // μ^1/3 / mean_motion.toRadsPerSecond^2/3
 
@@ -52,7 +53,7 @@ public class TwoLineElementDeserializer {
                 name: title_line.Trim(),
                 epoch: epoch,
                 elements: new OrbitalElements(
-                    a: Distance.Metres(a),
+                    a: Length.Metres(a),
                     i: Angle.Degrees(inc),
                     e: e,
                     Ω: Angle.Degrees(ra),

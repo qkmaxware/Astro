@@ -1,4 +1,5 @@
 using System;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro {
 
@@ -25,7 +26,7 @@ public class RateOfChange<T> {
     /// <param name="duration">duration over which change takes place</param>
     public RateOfChange (T amount, TimeSpan duration) {
         this.Amount = amount;
-        this.Duration = duration;
+        this.Duration = Duration.Seconds(duration.TotalSeconds);
     }
     /// <summary>
     /// Create a new rate of change

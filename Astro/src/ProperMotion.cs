@@ -1,4 +1,5 @@
 using System;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro {
 

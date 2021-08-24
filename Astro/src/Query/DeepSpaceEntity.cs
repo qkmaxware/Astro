@@ -1,4 +1,5 @@
 using System;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro.Query {
 
@@ -43,13 +44,13 @@ public class DeepSpaceEntity : CataloguedEntity {
         if (this.Coordinates.ProperMotion == null)
             return this.Coordinates;    // No motion
         
-        var raRate = this.Coordinates.ProperMotion.RightAscensionRate.Amount.TotalHours 
-                    / this.Coordinates.ProperMotion.RightAscensionRate.Duration.TotalSeconds;
+        var raRate = this.Coordinates.ProperMotion.RightAscensionRate.Amount.TotalHours() 
+                    / this.Coordinates.ProperMotion.RightAscensionRate.Duration.TotalSeconds();
 
-        var decRate = this.Coordinates.ProperMotion.DeclinationRate.Amount.TotalDegrees 
-                    / this.Coordinates.ProperMotion.DeclinationRate.Duration.TotalSeconds;
+        var decRate = this.Coordinates.ProperMotion.DeclinationRate.Amount.TotalDegrees() 
+                    / this.Coordinates.ProperMotion.DeclinationRate.Duration.TotalSeconds();
 
-        var timeSpan = time.TotalSeconds;
+        var timeSpan = time.TotalSeconds();
 
         var newRa = this.Coordinates.RightAscension.Add(Angle.Hours(raRate * timeSpan));
         var newDec = this.Coordinates.Declination.Add(Angle.Degrees(decRate * timeSpan));
@@ -63,33 +64,33 @@ public class DeepSpaceEntity : CataloguedEntity {
     }
 
     /// <summary>
-    /// Compute the distance between this entity and another using their current coordinates
+    /// Compute the Length between this entity and another using their current coordinates
     /// </summary>
     /// <param name="other">other entity</param>
-    /// <returns>Distance between entities</returns>
-    public Distance? DistanceTo(DeepSpaceEntity other) {
+    /// <returns>Length between entities</returns>
+    public Length? LengthTo(DeepSpaceEntity other) {
         if (this.Coordinates.SolDistance == null || this.Coordinates.Declination == null || this.Coordinates.RightAscension == null)
             return null;
         if (other.Coordinates.SolDistance == null || other.Coordinates.Declination == null || other.Coordinates.RightAscension == null)
             return null;
 
-        var R1 = this.Coordinates.SolDistance.TotalKilometres;
-        var A1 = this.Coordinates.RightAscension.TotalRadians;
-        var D1 = this.Coordinates.Declination.TotalRadians;
+        var R1 = (double)this.Coordinates.SolDistance.TotalKilometres();
+        var A1 = this.Coordinates.RightAscension.TotalRadians();
+        var D1 = this.Coordinates.Declination.TotalRadians();
 
-        var R2 = other.Coordinates.SolDistance.TotalKilometres;
-        var A2 = other.Coordinates.RightAscension.TotalRadians;
-        var D2 = other.Coordinates.Declination.TotalRadians;
+        var R2 = (double)other.Coordinates.SolDistance.TotalKilometres();
+        var A2 = other.Coordinates.RightAscension.TotalRadians();
+        var D2 = other.Coordinates.Declination.TotalRadians();
 
-        var x1 = R1 * Math.Cos(A1) * Math.Cos(D1);
-        var y1 = R1 * Math.Sin(A1) * Math.Cos(D1);
-        var z1 = R1 * Math.Sin(D1);
+        var x1 = R1 * Math.Cos((double)A1) * Math.Cos((double)D1);
+        var y1 = R1 * Math.Sin((double)A1) * Math.Cos((double)D1);
+        var z1 = R1 * Math.Sin((double)D1);
 
-        var x2 = R2 * Math.Cos(A2) * Math.Cos(D2);
-        var y2 = R2 * Math.Sin(A2) * Math.Cos(D2);
-        var z2 = R2 * Math.Sin(D2);
+        var x2 = R2 * Math.Cos((double)A2) * Math.Cos((double)D2);
+        var y2 = R2 * Math.Sin((double)A2) * Math.Cos((double)D2);
+        var z2 = R2 * Math.Sin((double)D2);
 
-        return Distance.Kilometres(
+        return Length.Kilometres(
             Math.Sqrt(
                   (x2 - x1) * (x2 - x1)
                 + (y2 - y1) * (y2 - y1)

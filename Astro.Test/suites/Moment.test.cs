@@ -20,9 +20,9 @@ public class MomentTest {
         var julian = Moment.J2000;
 
         // Verify
-        Assert.AreEqual(2000, julian.Year);
-        Assert.AreEqual(Month.Jan, julian.Month);
-        Assert.AreEqual(1, julian.Day);
+        Assert.AreEqual(2000, julian.UtcTimestamp.Year);
+        Assert.AreEqual(Month.Jan, julian.UtcTimestamp.Month);
+        Assert.AreEqual(1, julian.UtcTimestamp.Day);
     }
 
     [TestMethod]
@@ -43,7 +43,7 @@ public class MomentTest {
         Moment t2 = new DateTime(year: 2021, month: (int)Month.Jan, day: 7);
 
         var duration = t2 - t1;
-        Assert.AreEqual(6, duration.TotalDays);
+        Assert.AreEqual(6, (double)duration.TotalDays(), 0.0000001);
     }
 }
 

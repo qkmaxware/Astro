@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Qkmaxware.Astro.Arithmetic;
+using Qkmaxware.Measurement;
+using Qkmaxware.Numbers;
 
 namespace Qkmaxware.Astro.Dynamics {
     
@@ -31,7 +33,7 @@ public class ReferenceFrame {
     /// <summary>
     /// Position of this reference frame relative to its parent frame
     /// </summary>
-    public Vec3<Distance> Position {get; set;} = new Vec3<Distance>(Distance.Zero, Distance.Zero, Distance.Zero);
+    public Vec3<Length> Position {get; set;} = new Vec3<Length>(Length.Zero, Length.Zero, Length.Zero);
 
     /// <summary>
     /// Find a parent frame that is shared between two reference frames
@@ -90,7 +92,7 @@ public class ReferenceFrame {
     /// <param name="position">position in local space</param>
     /// <param name="frame">other frame</param>
     /// <returns>position in other frame</returns>
-    public Vec3<Distance> LocalToPositionInFrame(Vec3<Distance> position, ReferenceFrame frame) {
+    public Vec3<Length> LocalToPositionInFrame(Vec3<Length> position, ReferenceFrame frame) {
         var root = FindSharedParent(this, frame); // will always share the "null" frame at least
 
         // Get position in "parent" frame
@@ -121,7 +123,7 @@ public class ReferenceFrame {
     /// </summary>
     /// <param name="local">position within this frame</param>
     /// <returns>position in the global frame</returns>
-    public Vec3<Distance> LocalToGlobalPosition (Vec3<Distance> local) {
+    public Vec3<Length> LocalToGlobalPosition (Vec3<Length> local) {
         var position = local;
 
         // Move up to shared "null parent space"
@@ -138,7 +140,7 @@ public class ReferenceFrame {
     /// </summary>
     /// <param name="global">position in "global" space</param>
     /// <returns>position in local space</returns>
-    public Vec3<Distance> GlobalToLocalPosition(Vec3<Distance> global) {
+    public Vec3<Length> GlobalToLocalPosition(Vec3<Length> global) {
         var position = global;
         
         // Get all nodes to the global node
@@ -165,7 +167,7 @@ public class ReferenceFrame {
     /// <param name="frame">new frame of reference</param>
     /// <typeparam name="T">vector type</typeparam>
     /// <returns>Direction relative to the new frame of reference</returns>
-    public Vec3<T> LocalToDirectionInFrame<T>(Vec3<T> direction, ReferenceFrame frame) where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, IDividable<T>, IScaleable<T>, ISqrt<T>{
+    public Vec3<T> LocalToDirectionInFrame<T>(Vec3<T> direction, ReferenceFrame frame) where T:IScalable<Scientific, T>, INumeric<T> {
         // Keep rotating the vector to match the reference frame, no moving is required
         var root = FindSharedParent(this, frame);
         Quat toRoot = Quat.Identity;
@@ -182,7 +184,7 @@ public class ReferenceFrame {
             path = path.ParentReferenceFrame;
         }
 
-        return (fromRoot.Conjugate * toRoot) * direction;
+        return direction.Rotate(fromRoot.Conjugate * toRoot);
     }
 
     /// <summary>
@@ -191,7 +193,7 @@ public class ReferenceFrame {
     /// <param name="direction">direction in local space</param>
     /// <typeparam name="T">vector type</typeparam>
     /// <returns>Direction relative to global space</returns>
-    public Vec3<T> LocalToGlobalDirection<T>(Vec3<T> direction) where T:IAddable<T>, ISubtractable<T>, IMultiplyable<T>, IDividable<T>, IScaleable<T>, ISqrt<T>{
+    public Vec3<T> LocalToGlobalDirection<T>(Vec3<T> direction) where T:IScalable<Scientific, T>, INumeric<T> {
         Quat toRoot = Quat.Identity;
 
         ReferenceFrame? path = this;
@@ -200,7 +202,7 @@ public class ReferenceFrame {
             path = path.ParentReferenceFrame;
         }
 
-        return toRoot * direction;
+        return direction.Rotate(toRoot);
     }
 
     /// <summary>
@@ -208,9 +210,9 @@ public class ReferenceFrame {
     /// </summary>
     /// <param name="frame">other frame of reference</param>
     /// <returns>position relative to the input frame</returns>
-    public Vec3<Distance> GetPositionRelativeTo(ReferenceFrame frame) {
+    public Vec3<Length> GetPositionRelativeTo(ReferenceFrame frame) {
         return LocalToPositionInFrame(
-            new Vec3<Distance>(Distance.Zero, Distance.Zero, Distance.Zero),
+            new Vec3<Length>(Length.Zero, Length.Zero, Length.Zero),
             frame
         );
     }

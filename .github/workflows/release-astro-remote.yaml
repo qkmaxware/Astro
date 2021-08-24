@@ -1,145 +1,155 @@
-name: Publish Astro.Remote
+name: Test Astro.Remote
 on:
-  release: 
-    types: [ published ]
+  push: 
+    branches: 
+    - "*"
 jobs:
   Windows:
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      fail-fast: false
-      matrix: 
-        os: [ windows-latest ]
-        dotnet: [ '3.1.x' ]
+    runs-on: windows-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@master
-    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '${{ matrix.dotnet }}'
-    - name: Build
-      env: 
-        GITHUB_USERNAME: qkmaxware
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd Astro.Remote
-        cd Astro.Remote.Windows
-        dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.Windows.csproj /restore /property:Configuration=Release
-    - name: Compress
-      uses: thedoctor0/zip-release@master
-      with: 
-        filename: 'windows.zip'
-        directory: Astro.Remote.Windows\bin\Release\
-    - name: Upload
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        asset_path: "windows.zip"
+      - name: Checkout Code
+        uses: actions/checkout@master
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
+
+      - name: Setup NPM 
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v1 
+        with:
+          dotnet-version: '5.0.x' # SDK Version to use
+
+      - name: Install Electron Tooling
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet tool install ElectronNET.CLI -g
+
+      - name: Restore Dependencies
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet restore
+
+      - name: Build x64 Binary
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cd Astro.Apps\Qkmaxware.Astro.Apps.Remote\Qkmaxware.Astro.Apps.Remote.csproj; electronize build /target win
+
+      - name: Check Binaries
+        run: ls bin/Desktop/
+
+      - name: Rename x64 Binary
+        run: Rename-Item -Path "bin/Desktop/Qkmaxware.Astro.Apps.Remote 1.0.0.exe" -NewName Astro.Remote.Windows.x64.exe
+
+      - name: Push x64 Binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: Astro.Remote.Windows.x64.exe
 
   MacOS:
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      fail-fast: false
-      matrix: 
-        os: [ macos-latest ]
-        dotnet: [ '3.1.x' ]
+    runs-on: macos-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@master
-    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '${{ matrix.dotnet }}'
-    - name: Build
-      env: 
-        GITHUB_USERNAME: qkmaxware
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd Astro.Remote
-        cd Astro.Remote.macOS
-        dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.macOS.csproj /restore /property:Configuration=Release
-    - name: Compress
-      uses: thedoctor0/zip-release@master
-      with: 
-        filename: 'macos.zip'
-        directory: Astro.Remote.macOS\bin\Release\
-    - name: Upload
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        asset_path: "macos.zip"
+      - name: Checkout Code
+        uses: actions/checkout@master
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
 
-  Android:
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      fail-fast: false
-      matrix: 
-        os: [ macos-latest ]
-        dotnet: [ '3.1.x' ]
-    steps:
-    - name: Checkout Code
-      uses: actions/checkout@master
-    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '${{ matrix.dotnet }}'
-    - name: Build
-      env: 
-        GITHUB_USERNAME: qkmaxware
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd Astro.Remote
-        cd Astro.Remote.Android
-        dotnet restore --configfile "..\..\nuget.config"
-        dotnet publish -c Release
-    - name: Compress
-      uses: thedoctor0/zip-release@master
-      with: 
-        filename: 'android.zip'
-        directory: Astro.Remote.Android\bin\Release\
-    - name: Upload
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        asset_path: "android.zip"
+      - name: Setup NPM 
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
 
-  IOS:
-    runs-on: ${{ matrix.os }}
-    strategy: 
-      fail-fast: false
-      matrix: 
-        os: [ macos-latest ]
-        dotnet: [ '3.1.x' ]
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v1 
+        with:
+          dotnet-version: '5.0.x' # SDK Version to use
+
+      - name: Install Electron Tooling
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet tool install ElectronNET.CLI -g
+
+      - name: Restore Dependencies
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet restore
+
+      - name: Build x64 Binary
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cd Astro.Apps\Qkmaxware.Astro.Apps.Remote\Qkmaxware.Astro.Apps.Remote.csproj && electronize build /target osx
+      
+      - name: Check Binaries
+        run: ls bin/Desktop/
+
+      - name: Rename x64 Binary
+        run: mv "bin/Desktop/Qkmaxware.Astro.Apps.Remote-1.0.0-mac.zip" "bin/Desktop/Astro.Remote.Mac.x64.zip"
+
+      - name: Push x64 Binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: bin/Desktop/Astro.Remote.Mac.x64.zip
+
+  Linux:
+    runs-on: ubuntu-latest
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@master
-    - name: Setup .NET Core - ${{ matrix.dotnet }}@${{ matrix.os }}
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: '${{ matrix.dotnet }}'
-    - name: Build
-      env: 
-        GITHUB_USERNAME: qkmaxware
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        cd Astro.Remote
-        cd Astro.Remote.iOS
-        dotnet restore --configfile "..\..\nuget.config"
-        msbuild Astro.Remote.iOS.csproj /restore /property:Configuration=Release
-    - name: Compress
-      uses: thedoctor0/zip-release@master
-      with: 
-        filename: 'ios.zip'
-        directory: Astro.Remote.iOS\bin\Release\
-    - name: Upload
-      uses: softprops/action-gh-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        asset_path: "ios.zip"
-    
+      - name: Checkout Code
+        uses: actions/checkout@master
+        with:
+          submodules: "recursive"
+          fetch-depth: 0
+
+      - name: Setup NPM 
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Setup Dotnet
+        uses: actions/setup-dotnet@v1 
+        with:
+          dotnet-version: '5.0.x' # SDK Version to use
+
+      - name: Install Electron Tooling
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet tool install ElectronNET.CLI -g
+
+      - name: Restore Dependencies
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: dotnet restore
+
+      - name: Build x64 Binary
+        env: 
+          GITHUB_USERNAME: qkmaxware
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: cd Astro.Apps\Qkmaxware.Astro.Apps.Remote\Qkmaxware.Astro.Apps.Remote.csproj && electronize build /target linux
+
+      - name: Check Binaries
+        run: ls bin/Desktop/
+
+      - name: Rename x64 Binary
+        run: mv "bin/Desktop/Qkmaxware.Astro.Apps.Remote-1.0.0.AppImage" "bin/Desktop/Astro.Remote.Linux.x64.AppImage"
+
+      - name: Push x64 Binary
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.ref }}
+          file: bin/Desktop/Astro.Remote.Linux.x64.AppImage

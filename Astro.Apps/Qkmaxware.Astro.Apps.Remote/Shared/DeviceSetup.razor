@@ -1,0 +1,35 @@
+@inject IndiConnectionManager IndiConnectionManager;
+
+<div class="w3-container w3-indigo">
+    <h3>INDI Server</h3>
+</div>
+<IndiConnector OnBeforeRefresh=subscribe>
+</IndiConnector>
+
+<div class="w3-container w3-indigo">
+    <h4>Devices</h4>
+</div>
+<div class="w3-container w3-dark-grey">
+    <h5>Mount</h5>
+</div>
+<div class="w3-margin-bottom">
+    <Qkmaxware.Astro.Apps.Remote.Shared.DeviceList @ref=mount>
+    </Qkmaxware.Astro.Apps.Remote.Shared.DeviceList>
+</div>
+
+@code {
+    // TODO, device list has to subscribe to the INDI conenction notifications noting ofc that the connection can change
+    private DeviceList mount;
+    private DeviceList focuser = null;
+    private DeviceList camera = null;
+
+    public IndiDevice SelectedMount => mount?.SelectedDevice;
+    public IndiDevice SelectedFocuser => focuser?.SelectedDevice;
+    public IndiDevice SelectedCamera => camera?.SelectedDevice;
+
+    private void subscribe() {
+        IndiConnectionManager.Subscribe(mount);
+        IndiConnectionManager.Subscribe(focuser);
+        IndiConnectionManager.Subscribe(camera);
+    }
+}

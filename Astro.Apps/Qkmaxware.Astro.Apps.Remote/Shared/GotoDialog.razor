@@ -1,0 +1,139 @@
+<Popup @ref=popup>
+    <div class="w3-row">
+        <div class="w3-third">
+            <div>
+                <div class="w3-padding">
+                    <label>Right Ascension (deg)</label>
+                    <input class="w3-input w3-dark-grey" @bind=ra type="number">
+                </div>
+                <div class="w3-padding">
+                    <label>Declination (deg)</label>
+                    <input class="w3-input w3-dark-grey" @bind=dec type="number">
+                </div>
+            </div>
+            <div class="w3-row w3-padding">
+                <div class="w3-col s6 w3-left-align">
+                    <button class="w3-button w3-red" @onclick=@(() => Hide())>Cancel</button>
+                </div>
+                <div class="w3-col s6 w3-right-align">
+                    <button @onclick=gotoNow class="w3-button w3-green">Goto</button>
+                </div>
+            </div>
+        </div>
+        <div class="w3-rest">
+            <div class="w3-padding">
+                <div class="w3-container">
+                    <div class="w3-row">
+                        <div class="w3-col" style="width: 100px;">
+                            <button class="w3-button w3-blue" @onclick=startSearch>Search</button>
+                        </div>
+                        <div class="w3-rest">
+                            <input class="w3-input w3-dark-grey" @bind="search" placeholder="search" />
+                        </div>
+                    </div>
+                </div>
+                @if (error != null) {
+                <div class="w3-panel w3-red w3-round">
+                    <b>Error</b>
+                    <p>
+                        @error?.ToString()
+                    </p>
+                </div>
+                }
+                @if (isSearching == false) {
+                    <ul class="w3-padding w3-ul w3-hoverable">
+                        @if(search_results != null) {
+                        foreach (var item in search_results) {
+                        <li @onclick=@(() => select(item))>
+                            @if (item.SatelliteData != null) {
+                                <img src="/assets/satellite.svg" alt="icon" width=32 height=32/>
+                            } else if (item.StationData != null) {
+                                <img src="/assets/station.svg" alt="icon" width=32 height=32/>
+                            } else if (item.StarData != null) {
+                                <img src="/assets/star.svg" alt="icon" width=32 height=32/>
+                            } else if (item.PlanetData != null) {
+                                <img src="/assets/planet.svg" alt="icon" width=32 height=32/>
+                            } else if (item.GalaxyData != null) {
+                                <img src="/assets/galaxy.svg" alt="icon" width=32 height=32/>
+                            } else {
+                                <img src="/assets/unknown.svg" alt="icon" width=32 height=32/>
+                            }
+                            <span>@item?.ToString()</span>
+                        </li> 
+                        }
+                        }
+                    </ul>
+                } else {
+                    <div class="w3-center w3-margin w3-padding">
+                        <div class="w3-spinner" style="margin-left: calc(50% - 32px);"></div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</Popup>
+
+@code {
+
+    private NetworkCatalogue[] Catalogues = new NetworkCatalogue[]{
+        new J2000Catalogue(),
+        new CelestrakSatelliteCatalogue(),
+        new CelestrakStationCatalogue(),
+        new SimbadIdCatalogue(),
+    };
+
+    private Popup popup;
+    private string search;
+
+    private Exception error;
+    private bool isSearching = false;
+    private List<CataloguedObject> search_results;
+    private CataloguedObject selected;
+    private void select(CataloguedObject item) {
+        selected = item;
+        if (item.HasRaAndDec()) {
+            ra = item.getRa();
+            dec = item.getDec();
+        }
+    }
+    private double ra;
+    private double dec;
+
+    [Parameter]
+    public Action<double,double> OnGoto {get; set;}
+
+    public void Show() {
+        this.popup.Show();
+    }
+
+    public void Hide() {
+        this.popup.Hide();
+    }
+
+    private void gotoNow() {
+        if (selected != null) {
+            Hide();
+            OnGoto?.Invoke(ra, dec);
+        }
+    }
+
+    private void startSearch() {
+        if (isSearching == false) {
+            isSearching = true;
+            StateHasChanged();
+            Task.Run(() => startSearchAsync(search));
+        }
+    }
+
+    private Exception startSearchAsync(string search) {
+        try {
+            this.search_results = this.Catalogues.SelectMany(cat => cat.Search(search)).ToList();
+        } catch (Exception e) {
+            this.error = e;
+        }
+        isSearching = false;
+        InvokeAsync(StateHasChanged);
+        return error;
+    }
+
+}

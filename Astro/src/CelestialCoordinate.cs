@@ -1,4 +1,5 @@
 using System;
+using Qkmaxware.Measurement;
 
 namespace Qkmaxware.Astro {
 
@@ -7,9 +8,9 @@ namespace Qkmaxware.Astro {
 /// </summary>
 public class CelestialCoordinate {
     /// <summary>
-    /// Distance from the Sol system
+    /// Length from the Sol system
     /// </summary>
-    public Distance? SolDistance {get; private set;}
+    public Length? SolDistance {get; private set;}
     /// <summary>
     /// Right ascension angle
     /// </summary>
@@ -27,11 +28,11 @@ public class CelestialCoordinate {
     /// <summary>
     /// Create a new celestial coordinate
     /// </summary>
-    /// <param name="distance">distance from the sun</param>
+    /// <param name="distance">Length from the sun</param>
     /// <param name="ra">right ascension</param>
     /// <param name="dec">declination</param>
     /// <param name="motion">optional proper motion</param>
-    public CelestialCoordinate(Distance? distance, Angle? ra, Angle? dec, ProperMotion? motion = null) {
+    public CelestialCoordinate(Length? distance, Angle? ra, Angle? dec, ProperMotion? motion = null) {
         this.SolDistance = distance;
         this.RightAscension = ra;
         this.Declination = dec;

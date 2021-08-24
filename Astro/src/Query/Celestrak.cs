@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using Qkmaxware.Astro.Constants;
 using Qkmaxware.Astro.IO;
 
 namespace Qkmaxware.Astro.Query {
@@ -26,7 +27,7 @@ public static class Celestrak {
     private static IEnumerable<KeplerianEntity> readTle(string url) {
         var source = downloadTleText(url);
         var serializer = new TwoLineElementDeserializer();
-        return serializer.Deserialize(Mass.Earth, source);
+        return serializer.Deserialize(Masses.Earth, source);
     }
 
     public static IEnumerable<KeplerianEntity> SpaceStations() {

@@ -1,5 +1,7 @@
 using System;
 using Qkmaxware.Astro.Arithmetic;
+using Qkmaxware.Measurement;
+using Qkmaxware.Numbers;
 
 namespace Qkmaxware.Astro.Dynamics {
 
@@ -20,9 +22,9 @@ public class OrbitalElements {
     #region Orbital Elements
 
     /// <summary>
-    /// The sum of the periapsis and apoapsis distances divided by two
+    /// The sum of the periapsis and apoapsis Lengths divided by two
     /// </summary>
-    public Distance SemimajorAxis {get; private set;}
+    public Length SemimajorAxis {get; private set;}
     /// <summary>
     /// Vertical tilt of the ellipse with respect to the reference plane
     /// </summary>
@@ -67,25 +69,25 @@ public class OrbitalElements {
     /// </summary>
     /// <param name="parent">body being orbited</param>
     /// <returns>position</returns>
-    public Vec3<Distance> CartesianPosition(Mass parent) {
-        var nu = this.TrueAnomaly.TotalRadians;
-        var i = this.Inclination.TotalRadians;
-        var mu = parent.μ;
-        var a = this.SemimajorAxis.TotalMetres;
+    public Vec3<Length> CartesianPosition(Mass parent) {
+        var nu = this.TrueAnomaly;
+        var i = this.Inclination;
+        var mu = parent.μ();
+        var a = this.SemimajorAxis;
         var e = this.Eccentricity;
-        var r = a * (1 - e * Math.Cos(this.EccentricAnomaly.TotalRadians));
-        var h = Math.Sqrt(mu * a * (1 - Math.Pow(e, 2)));
-        var O = this.LongitudeOfAscendingNode.TotalRadians;
-        var w = this.ArgumentOfPeriapsis.TotalRadians;
+        var r = a * (1 - e * this.EccentricAnomaly.Cos());
+        // var h = Math.Sqrt(mu * a * (1 - Math.Pow(e, 2)));
+        var O = this.LongitudeOfAscendingNode;
+        var w = this.ArgumentOfPeriapsis;
 
-        var x = r * (Math.Cos(O) * Math.Cos(w + nu) - Math.Sin(O) * Math.Sin(w + nu) * Math.Cos(i));
-        var y = r * (Math.Sin(O) * Math.Cos(w + nu) + Math.Cos(O) * Math.Sin(w + nu) * Math.Cos(i));
-        var z = r * (Math.Sin(i) * Math.Sin(w + nu));
+        var x = r * (O.Cos() * (w + nu).Cos() - O.Sin() * (w + nu).Sin() * i.Cos());
+        var y = r * (O.Sin() * (w + nu).Cos() + O.Cos() * (w + nu).Sin() * i.Cos());
+        var z = r * (i.Sin() * (w + nu).Sin());
 
-        return new Vec3<Distance>(
-            Distance.Metres(x),
-            Distance.Metres(y),
-            Distance.Metres(z)
+        return new Vec3<Length>(
+            x,
+            y,
+            z
         );
     }
 
@@ -95,30 +97,30 @@ public class OrbitalElements {
     /// <param name="parent">body being orbited</param>
     /// <returns>velocity</returns>
     public Vec3<Speed> CartesianVelocity(Mass parent) {
-        var nu = this.TrueAnomaly.TotalRadians;
-        var i = this.Inclination.TotalRadians;
-        var mu = parent.μ;
-        var a = this.SemimajorAxis.TotalMetres;
+        var nu = this.TrueAnomaly;
+        var i = this.Inclination;
+        var mu = parent.μ();
+        var a = this.SemimajorAxis;
         var e = this.Eccentricity;
-        var r = a * (1 - e * Math.Cos(this.EccentricAnomaly.TotalRadians));
-        var h = Math.Sqrt(mu * a * (1 - Math.Pow(e, 2)));
-        var O = this.LongitudeOfAscendingNode.TotalRadians;
-        var w = this.ArgumentOfPeriapsis.TotalRadians;
+        var r = a * (1 - e * this.EccentricAnomaly.Cos());
+        var h = (mu * a * (1 - Math.Pow(e, 2))).Sqrt();
+        var O = this.LongitudeOfAscendingNode;
+        var w = this.ArgumentOfPeriapsis;
 
-        var x = r * (Math.Cos(O) * Math.Cos(w + nu) - Math.Sin(O) * Math.Sin(w + nu) * Math.Cos(i));
-        var y = r * (Math.Sin(O) * Math.Cos(w + nu) + Math.Cos(O) * Math.Sin(w + nu) * Math.Cos(i));
-        var z = r * (Math.Sin(i) * Math.Sin(w + nu));
+        var x = r * (O.Cos() * (w + nu).Cos() - O.Sin() * (w + nu).Sin() * i.Cos());
+        var y = r * (O.Sin() * (w + nu).Cos() + O.Cos() * (w + nu).Sin() * i.Cos());
+        var z = r * (i.Sin() * (w + nu).Sin());
 
         var p = a * (1 - Math.Pow(e, 2));
 
-        var vx = (x*h*e/(r*p))*Math.Sin(nu) - (h/r)*(Math.Cos(O)*Math.Sin(w+nu) + Math.Sin(O)*Math.Cos(w+nu)*Math.Cos(i));
-        var vy = (y*h*e/(r*p))*Math.Sin(nu) - (h/r)*(Math.Sin(O)*Math.Sin(w+nu) - Math.Cos(O)*Math.Cos(w+nu)*Math.Cos(i));
-        var vz = (z*h*e/(r*p))*Math.Sin(nu) + (h/r)*(Math.Cos(w+nu)*Math.Sin(i));
+        var dy = ((y.MultiplyBy(h) * e).DivideBy(r.MultiplyBy(p))) * nu.Sin() - (h.DivideBy(r)) * (O.Sin() * (w+nu).Sin() - O.Cos() * (w+nu).Cos() * i.Cos());
+        var dz = ((z.MultiplyBy(h) * e).DivideBy(r.MultiplyBy(p))) * nu.Sin() + (h.DivideBy(r)) * ((w+nu).Cos() * i.Sin());
+        var dx = ((x.MultiplyBy(h) * e).DivideBy(r.MultiplyBy(p))) * nu.Sin() - (h.DivideBy(r)) * (O.Cos() * (w+nu).Sin() + O.Sin() * (w+nu).Cos() * i.Cos());
 
         return new Vec3<Speed>(
-            Speed.MetresPerSecond(vx),
-            Speed.MetresPerSecond(vy),
-            Speed.MetresPerSecond(vz)
+            dx / Duration.OneSecond,
+            dx / Duration.OneSecond,
+            dx / Duration.OneSecond
         );
     }
 
@@ -127,8 +129,8 @@ public class OrbitalElements {
     /// </summary>
     /// <param name="parent">mass of body being orbitted</param>
     /// <returns>J/kg</returns>
-    public double SpecificOrbitalEnergy(Mass parent) {
-        return -parent.μ / (2 * SemimajorAxis.TotalMetres);
+    public Scientific SpecificOrbitalEnergy(Mass parent) {
+        return -parent.μ() / (2 * SemimajorAxis.TotalMetres());
     }
 
     /// <summary>
@@ -142,7 +144,7 @@ public class OrbitalElements {
             return Energy.Joules(0);
         else {
             var specificOrbitalEnergy = SpecificOrbitalEnergy(parent);
-            return Energy.Joules(self.TotalKilograms /*kg*/ * specificOrbitalEnergy /*J/kg*/);
+            return Energy.Joules(self.TotalKilograms() /*kg*/ * specificOrbitalEnergy /*J/kg*/);
         }
     }
 
@@ -156,10 +158,10 @@ public class OrbitalElements {
             return Duration.Infinite;
         } else {
             var numerator = 4 * Math.PI * Math.PI;
-            var a = this.SemimajorAxis.TotalMetres;
+            var a = this.SemimajorAxis.TotalMetres();
             var scale = a * a * a;
-            var denominator = parent.μ;
-            return Duration.Seconds( Math.Sqrt( (numerator/denominator) * scale ) );
+            var denominator = parent.μ();
+            return Duration.Seconds( Math.Sqrt( (numerator/denominator) * (double)scale ) );
         }
     }
     /// <summary>
@@ -169,15 +171,15 @@ public class OrbitalElements {
     /// <returns>mean motion</returns>
     public RateOfChange<Angle> MeanMotion(Mass parent) {
         return new RateOfChange<Angle>(
-            Angle.Revolutions(1),
+            Angle.Degrees(360),
             OrbitalPeriod(parent)
         );
     }
     private Duration timeAtAnomaly(Mass parent, Angle anomaly) {
-        var a = this.SemimajorAxis.TotalMetres;
+        var a = this.SemimajorAxis.TotalMetres();
         var aaa = a * a * a;
-        var u = parent.μ;
-        var t = Math.Sqrt(aaa / u) * (anomaly.TotalRadians - this.Eccentricity * Math.Sin(anomaly.TotalRadians));
+        var u = parent.μ();
+        var t = Math.Sqrt((double)(aaa / u)) * (anomaly.TotalRadians() - this.Eccentricity * Math.Sin((double)anomaly.TotalRadians()));
         return Duration.Seconds(t);
     }
     public Duration TimeSincePeriapsis(Mass parent) {
@@ -199,11 +201,11 @@ public class OrbitalElements {
     /// <summary>
     /// The axis perpendicular to the Semimajor Axis
     /// </summary>
-    public Distance SemiminorAxis() => (SemimajorAxis * (1 - Eccentricity));
+    public Length SemiminorAxis() => (SemimajorAxis * Math.Sqrt(1 - Eccentricity * Eccentricity));
     /// <summary>
-    /// Distance from the point that is closest to the body it orbits.
+    /// Length from the point that is closest to the body it orbits.
     /// </summary>
-    public Distance PeriapsisDistance() {
+    public Length PeriapsisDistance() {
         if (IsParabolic) {
             return this.SemimajorAxis;
         } else {
@@ -213,7 +215,7 @@ public class OrbitalElements {
     /// <summary>
     /// The length of the cord parallel to the conic section and running through a focus
     /// </summary>
-    public Distance SemilatusRectum() {
+    public Length SemilatusRectum() {
         if (IsParabolic) {
             return (2 * PeriapsisDistance());
         } 
@@ -246,35 +248,35 @@ public class OrbitalElements {
     /// <param name="parent">mass of body being orbited</param>
     /// <param name="positionVector">position relative to the parent object</param>
     /// <param name="velocityVector">velocity relative to the parent object</param>    
-    public OrbitalElements(Mass parent, Vec3<Distance> positionVector, Vec3<Speed> velocityVector) {
-        var position = positionVector.Convert(x => (Real)x.TotalMetres);
-        var velocity = velocityVector.Convert(x => (Real)x.TotalMetresPerSecond);
+    public OrbitalElements(Mass parent, Vec3<Length> positionVector, Vec3<Speed> velocityVector) {
+        var position = positionVector.Map(x => (Scientific)x.TotalMetres());
+        var velocity = velocityVector.Map(x => (Scientific)x.TotalMetresPerSecond());
         var distance = position.Length;
         var speed = velocity.Length;
         var M = parent;
 
         // Cartesian state vector to orbital element conversion
-        var H = Vec3<Real>.Cross(position, velocity);
+        var H = Vec3<Scientific>.Cross(position, velocity);
         var h = H.Length;
-        var up = new Vec3<Real>(0,0,1);
-        var N = Vec3<Real>.Cross(up, H);
+        var up = new Vec3<Scientific>(0,0,1);
+        var N = Vec3<Scientific>.Cross(up, H);
         var n = N.Length;
 
-        var E = (Vec3<Real>.Cross(velocity,H) / M.μ) - (position / distance);
-        var e = E.Length;
+        var E = (Vec3<Scientific>.Cross(velocity,H) / M.μ()) - (position / distance);
+        var e = (double)E.Length;
 
-        var energy = (speed * speed)/2 - M.μ/distance;
+        var energy = (speed * speed)/2 - M.μ()/distance;
 
-        double a; double p;
+        Scientific a; Scientific p;
         if (Math.Abs(e - 1.0) > double.Epsilon) {
-            a = -M.μ / (2 * energy);
+            a = -M.μ() / (2 * energy);
             p = a * (1 - e * e);
         } else {
-            p = (h * h) / M.μ;
+            p = (h * h) / M.μ();
             a = double.PositiveInfinity;
         }
 
-        double i = Math.Acos(H.Z / h);
+        double i = Math.Acos((double)(H.Z / h));
 
         double eps = double.Epsilon;
         double Omega; double w;
@@ -284,27 +286,27 @@ public class OrbitalElements {
                 w = 0; // For circular orbits, place periapsis at ascending node by convention
             }
             else {
-                w = Math.Acos(E.X / e); 
+                w = Math.Acos((double)(E.X / e)); 
             }
         } else {
-            Omega = Math.Acos(N.X / n);
+            Omega = Math.Acos((double)(N.X / n));
             if (N.Y < 0) {
                 Omega = (2 * Math.PI) - Omega;
             }
 
-            w = Math.Acos(Vec3<Real>.Dot(N, E) / (n * e));
+            w = Math.Acos((double)(Vec3<Scientific>.Dot(N, E) / (n * e)));
         }
 
         double nu;
         if (Math.Abs(e) < eps) {
             if (Math.Abs(i) < eps) {
-                nu = Math.Acos(position.X / distance);
+                nu = Math.Acos((double)(position.X / distance));
                 if (velocity.X > 0) {
                     nu = (2 * Math.PI) - nu;
                 }
             } else {
-                nu = Math.Acos(Vec3<Real>.Dot(N,position) / (n * distance));
-                if (Vec3<Real>.Dot(N,velocity) > 0) {
+                nu = Math.Acos((double)(Vec3<Scientific>.Dot(N,position) / (n * distance)));
+                if (Vec3<Scientific>.Dot(N,velocity) > 0) {
                     nu = (2 * Math.PI) - nu;
                 }
             }
@@ -313,13 +315,13 @@ public class OrbitalElements {
                 w = (2 * Math.PI) - w;
             }
 
-            nu = Math.Acos(Vec3<Real>.Dot(E, position) / (e * distance));
-            if (Vec3<Real>.Dot(position,velocity) < 0) {
+            nu = Math.Acos((double)(Vec3<Scientific>.Dot(E, position) / (e * distance)));
+            if (Vec3<Scientific>.Dot(position,velocity) < 0) {
                 nu = (2 * Math.PI) - nu;
             }
         }
 
-        this.SemimajorAxis = Distance.Metres(a);
+        this.SemimajorAxis = Length.Metres(a);
         this.Inclination = Angle.Radians(i);
         this.Eccentricity = e;
         this.LongitudeOfAscendingNode = Angle.Radians(Omega);
@@ -330,10 +332,10 @@ public class OrbitalElements {
         // Compute true anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, anomalyValue.TotalRadians));
+                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.Eccentric:
-                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, anomalyValue.TotalRadians));
+                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.True:
             default:
@@ -347,25 +349,25 @@ public class OrbitalElements {
                 this.MeanAnomaly = anomalyValue;
                 break;
             case AnomalyType.Eccentric:
-                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, anomalyValue.TotalRadians));
+                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.True:
             default:
-                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, anomalyValue.TotalRadians));
+                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
         }
 
         // Compute eccentric anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, anomalyValue.TotalRadians));
+                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.Eccentric:
                 this.EccentricAnomaly = anomalyValue;
                 break;
             case AnomalyType.True:
             default:
-                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, anomalyValue.TotalRadians));
+                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
         }
     }
@@ -380,7 +382,7 @@ public class OrbitalElements {
     /// <param name="ω">argument of periapsis</param>
     /// <param name="anomalyValue">anomaly value</param>
     /// <param name="anomalyType">type of anomaly</param>
-    public OrbitalElements (Distance a, Angle i, double e, Angle @Ω, Angle @w, AnomalyType anomalyType, Angle anomalyValue) {
+    public OrbitalElements (Length a, Angle i, double e, Angle @Ω, Angle @w, AnomalyType anomalyType, Angle anomalyValue) {
         this.SemimajorAxis = a;
         this.Inclination = i;
         this.Eccentricity = e;
@@ -392,10 +394,10 @@ public class OrbitalElements {
         // Compute true anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, anomalyValue.TotalRadians));
+                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.Eccentric:
-                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, anomalyValue.TotalRadians));
+                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.True:
             default:
@@ -409,25 +411,25 @@ public class OrbitalElements {
                 this.MeanAnomaly = anomalyValue;
                 break;
             case AnomalyType.Eccentric:
-                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, anomalyValue.TotalRadians));
+                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.True:
             default:
-                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, anomalyValue.TotalRadians));
+                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
         }
 
         // Compute eccentric anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, anomalyValue.TotalRadians));
+                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
             case AnomalyType.Eccentric:
                 this.EccentricAnomaly = anomalyValue;
                 break;
             case AnomalyType.True:
             default:
-                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, anomalyValue.TotalRadians));
+                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
                 break;
         }
     }
