@@ -82,7 +82,7 @@ jobs:
         env: 
           GITHUB_USERNAME: qkmaxware
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: cd Astro.Apps\Qkmaxware.Astro.Apps.Remote && electronize build /target osx
+        run: cd Astro.Apps/Qkmaxware.Astro.Apps.Remote && electronize build /target osx
       
       - name: Check Binaries
         run: ls bin/Desktop/
