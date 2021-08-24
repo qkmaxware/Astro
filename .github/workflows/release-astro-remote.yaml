@@ -1,8 +1,7 @@
 name: Publish Astro.Remote
 on:
-  push: 
-    branches: 
-    - "*"
+  release: 
+    types: [ published ]
 jobs:
   Windows:
     runs-on: windows-latest
@@ -45,7 +44,7 @@ jobs:
         run: ls bin/Desktop/
 
       - name: Rename x64 Binary
-        run: Rename-Item -Path "bin/Desktop/Qkmaxware.Astro.Apps.Remote 1.0.0.exe" -NewName Astro.Remote.Windows.x64.exe
+        run: Rename-Item -Path "Astro.Apps\Qkmaxware.Astro.Apps.Remote\bin\Desktop\Qkmaxware.Astro.Apps.Remote 1.0.0.exe" -NewName Astro.Remote.Windows.x64.exe
 
       - name: Push x64 Binary
         uses: svenstaro/upload-release-action@v2
@@ -95,14 +94,14 @@ jobs:
         run: ls bin/Desktop/
 
       - name: Rename x64 Binary
-        run: mv "bin/Desktop/Qkmaxware.Astro.Apps.Remote-1.0.0-mac.zip" "bin/Desktop/Astro.Remote.Mac.x64.zip"
+        run: mv "Astro.Apps/Qkmaxware.Astro.Apps.Remote/bin/Desktop/Qkmaxware.Astro.Apps.Remote-1.0.0-mac.zip" "Astro.Remote.Mac.x64.zip"
 
       - name: Push x64 Binary
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
-          file: bin/Desktop/Astro.Remote.Mac.x64.zip
+          file: Astro.Remote.Mac.x64.zip
 
   Linux:
     runs-on: ubuntu-latest
@@ -145,11 +144,11 @@ jobs:
         run: ls bin/Desktop/
 
       - name: Rename x64 Binary
-        run: mv "bin/Desktop/Qkmaxware.Astro.Apps.Remote-1.0.0.AppImage" "bin/Desktop/Astro.Remote.Linux.x64.AppImage"
+        run: mv "Astro.Apps/Qkmaxware.Astro.Apps.Remote/bin/Desktop/Qkmaxware.Astro.Apps.Remote-1.0.0.AppImage" "Astro.Remote.Linux.x64.AppImage"
 
       - name: Push x64 Binary
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
-          file: bin/Desktop/Astro.Remote.Linux.x64.AppImage
+          file: Astro.Remote.Linux.x64.AppImage
