@@ -3,19 +3,16 @@ Astro.Remote is delivered as a binary file which can be installed on the user's 
 
 # Windows Installation
 1. Visit the [Releases](https://github.com/qkmaxware/Astro/releases) github page and select the version you want to install
-2. Download the `windows.zip` asset
-3. Unzip the application in your desired installation directory
-4. Run or create a desktop shortcut to `Astro.Remote.Windows.exe`
-
-# Android Installation
-1. Visit the [Releases](https://github.com/qkmaxware/Astro/releases) github page and select the version you want to install
-2. Download the `android.zip` asset
-3. Unzip the asset on your desktop computer
-4. Copy `Astro.Remote.Android.apk` to your android device
-5. On your phone run the apk file to install it. You may need to enable "install from unknown sources" temporarily.
+2. Download the `Astro.Remote.Windows.x64.exe` asset
+3. Run or create a desktop shortcut to `Astro.Remote.Windows.x64.exe`
 
 # Mac OS Installation
-Not yet tested
+1. Visit the [Releases](https://github.com/qkmaxware/Astro/releases) github page and select the version you want to install
+2. Download the `Astro.Remote.Mac.x64.zip` asset
+3. Unzip the application in the applications directory
+4. Run `Astro.Remote.Mac.x64`
 
-# IOS Installation
-Not yet tested
+# Linux Installation
+1. Visit the [Releases](https://github.com/qkmaxware/Astro/releases) github page and select the version you want to install
+2. Download the `Astro.Remote.Linux.x64.AppImage` asset
+3. Run or create a desktop shortcut to `Astro.Remote.Linux.x64.AppImage`

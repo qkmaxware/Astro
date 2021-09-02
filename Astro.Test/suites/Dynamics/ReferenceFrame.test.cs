@@ -32,6 +32,7 @@ public class ReferenceFrameTest {
         Assert.AreEqual(parent, ReferenceFrame.FindSharedParent(childA, childB));
     }
 
+    // TODO fix
     [TestMethod]
     public void TestNestedPosition() {
         // Create hierarchy

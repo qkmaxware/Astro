@@ -7,23 +7,20 @@ namespace Qkmaxware.Astro.Dynamics {
 
 public class OrbitalPropagator {
     public Mass ParentMass {get; private set;}
-    public Mass SatelliteMass {get; private set;}
     public OrbitalElements SatelliteOrbitalElements {get; private set;}
 
-    public OrbitalPropagator(Mass parent, Mass satellite, OrbitalElements initialOrbit) {
+    public OrbitalPropagator(Mass parent, OrbitalElements initialOrbit) {
         this.ParentMass = parent;
-        this.SatelliteMass = satellite;
         this.SatelliteOrbitalElements = initialOrbit;
     }
 
     public OrbitalPropagator Delay(Duration duration) {
         var mm = this.SatelliteOrbitalElements.MeanMotion(this.ParentMass);
-        var rate = mm.Amount.TotalRadians() / mm.Duration.TotalSeconds();
-        var position = this.SatelliteOrbitalElements.MeanAnomaly.TotalRadians();
-        var new_position = (double)(position + rate * duration.TotalSeconds()) % (2 * Math.PI);
+        var n = mm.Amount * (1 / mm.Duration.TotalSiderealDays());
+        var M = this.SatelliteOrbitalElements.MeanAnomaly + n * duration.TotalSiderealDays();
+
         return new OrbitalPropagator(
             this.ParentMass,
-            this.SatelliteMass,
             new OrbitalElements(
                 a:              this.SatelliteOrbitalElements.SemimajorAxis,
                 i:              this.SatelliteOrbitalElements.Inclination,
@@ -31,7 +28,7 @@ public class OrbitalPropagator {
                 Ω:              this.SatelliteOrbitalElements.LongitudeOfAscendingNode,
                 w:              this.SatelliteOrbitalElements.ArgumentOfPeriapsis,
                 anomalyType:    AnomalyType.Mean,
-                anomalyValue:   Angle.Radians(new_position)
+                anomalyValue:   M
             )
         );
     }
@@ -49,12 +46,11 @@ public class OrbitalPropagator {
     }
 
     public OrbitalPropagator AddDeltaV(Vec3<Speed> dv) {
-        var p = this.SatelliteOrbitalElements.CartesianPosition(this.ParentMass);
+        var p = this.SatelliteOrbitalElements.CartesianPosition();
         var v = this.SatelliteOrbitalElements.CartesianVelocity(this.ParentMass);
         
         return new OrbitalPropagator(
             this.ParentMass,
-            this.SatelliteMass,
             new OrbitalElements(this.ParentMass, p, v + dv)
         );
     }

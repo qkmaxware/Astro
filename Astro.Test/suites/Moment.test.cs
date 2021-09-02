@@ -13,6 +13,13 @@ public class MomentTest {
         
         // Verify
         Assert.AreEqual(2459060.5, moment.JulianDay, 0.01);
+        Assert.AreEqual(2451545, Moment.J2000.JulianDay, 0.01);
+        
+        var now = Moment.Now.JulianDay;
+        var then = Moment.J2000.JulianDay;
+        Console.WriteLine(now);
+        Console.WriteLine(then);
+        Console.WriteLine(AstronomicalDuration.JulianDays(now - then));
     }
 
     [TestMethod]

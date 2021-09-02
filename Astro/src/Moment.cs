@@ -10,6 +10,7 @@ public class Timestamp {
         this.Year = year;
         this.Month = month;
         this.Day = day;
+        this.Hour = hour;
         this.Minute = minute;
         this.Second = second;
         this.Millisecond = millisecond;
@@ -317,8 +318,8 @@ public struct Moment {
     /// <param name="end">ending time</param>
     /// <returns>time between start and end moments</returns>
     public static Duration operator - (Moment start, Moment end) {
-        Scientific hrs = (end.JulianDay - start.JulianDay) * 24;
-        return Duration.Hours(hrs.Abs());
+        Scientific days = (start.JulianDay - end.JulianDay);
+        return AstronomicalDuration.JulianDays(days);
     }
 
     /// <summary>

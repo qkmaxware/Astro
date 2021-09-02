@@ -4,29 +4,57 @@ using Qkmaxware.Astro.Arithmetic;
 using Qkmaxware.Astro.Constants;
 using Qkmaxware.Astro.Dynamics;
 using Qkmaxware.Measurement;
+using Qkmaxware.Numbers;
 
 namespace Qkmaxware.Astro.Tests {
 
 [TestClass]
 public class OrbitalElementsTest {
 
-    private OrbitalElements earthJ2000 = new OrbitalElements(
-        a: AstronomicalLength.AU(1),
-        i: Angle.Degrees(0.00005),
-        e: 0.01671022,
-        Ω: Angle.Degrees(-11.26064),
-        w: Angle.Degrees(102.94719),
-        AnomalyType.Mean,
-        Angle.Degrees(100.46435)
-    );
+    private OrbitalElements earthJ2000 = Constants.Planets.EarthJ2000.OrbitalElements;
 
     [TestMethod]
     public void Constructor() {
+        // Test base defining properties
         Assert.AreEqual(1, (double)earthJ2000.SemimajorAxis.TotalAU(), 0.000001);
         Assert.AreEqual(0.00005, (double) earthJ2000.Inclination.TotalDegrees(), 0.000001);
         Assert.AreEqual(0.01671022, earthJ2000.Eccentricity);
+        Assert.AreEqual(-11.26064, (double)earthJ2000.LongitudeOfAscendingNode.TotalDegrees(), 0.00001);
+        Assert.AreEqual(102.94719, (double)earthJ2000.ArgumentOfPeriapsis.TotalDegrees(), 0.00001);
+
+        // Test all anomalies
+        Assert.AreEqual(100.46435, (double)earthJ2000.MeanAnomaly.TotalDegrees(), 0.00001);
         Assert.AreEqual(101.403, (double)earthJ2000.EccentricAnomaly.TotalDegrees(), 0.001);
-        Assert.AreEqual(102.34003,(double)earthJ2000.TrueAnomaly.TotalDegrees(), 0.001);
+        Assert.AreEqual(102.3399,(double)earthJ2000.TrueAnomaly.TotalDegrees(), 0.001);
+    }
+
+    private static void AssertApproximatelyEqual(Scientific expected, Scientific real, float tolerance = 0.0000001f) {
+        if (expected.Exponent != real.Exponent)
+            Assert.Fail($"Expected: <{expected}> - Actual <{real}>");
+        if (Math.Abs(expected.Significand - real.Significand) > tolerance) {
+            Assert.Fail($"Expected: <{expected}> - Actual <{real}>");
+        }
+    }
+
+    [TestMethod]
+    public void TestToStateVector() {
+        var R = earthJ2000.CartesianPosition();
+        Console.WriteLine("R: " + R);
+        // Rx = -145616945390.06128m     = -1.4561694539006128e11
+        var Rx = new Scientific(-1.4561694539006128, 11);
+        AssertApproximatelyEqual(Rx, R.X.TotalMetres(), 0.000015f);
+        // Ry = -36377792009.26875m      = -3.637779200926875e10
+        var Ry = new Scientific(-3.637779200926875, 10);
+        AssertApproximatelyEqual(Ry, R.Y.TotalMetres(), 0.000015f);
+        // Rz = -55948.678183911616m     = -5.5948678183911616e4
+        var Rz = new Scientific(-5.5948678183911616, 4);
+        AssertApproximatelyEqual(Rz, R.Z.TotalMetres(), 0.000015f);
+        
+        var V = earthJ2000.CartesianVelocity(Constants.Planets.SolarMass);
+        Console.WriteLine("V: " + V);
+        // Vx = 6.722365304821024km/s           = 6.722365304821024e0km/s
+        // Vy = -28.915358819013097km/s         = -2.8915358819013097e1km/s
+        // Vz = -0.000023602102730285574km/s    = -2.3602102730285574e-5km/s
     }
 
     [TestMethod]
@@ -43,7 +71,7 @@ public class OrbitalElementsTest {
         
         // 149598073 * Math.Sqrt(1 - 0.01671022*0.01671022) = 149577185.30
         Assert.AreEqual(149577185.30, 149598073 * Math.Sqrt(1 - 0.01671022*0.01671022), 0.1); // What it should be
-        Assert.AreEqual(149577185.30, (double)earthJ2000.SemiminorAxis().TotalKilometres(), 0.001);
+        Assert.AreEqual(149577185.30, (double)earthJ2000.SemiminorAxis().TotalKilometres(), 0.1);
 
         // 149598073 * (1 - 0.01671022) = 147098256.28859394
         Assert.AreEqual(147098256.28859394, 149598073 * (1 - 0.01671022)); // What it should be
@@ -53,18 +81,29 @@ public class OrbitalElementsTest {
         Assert.AreEqual(365.0, (double)earthJ2000.OrbitalPeriod(Mass.Kilograms(1.989e30)).TotalDays(), 1);
     }
 
-    //[TestMethod]
+    [TestMethod]
     public void TestPropagation() {
         // Setup
         Moment reference = Moment.J2000;
-        var referencePropagator = new OrbitalPropagator(Masses.Sun, Masses.Earth, earthJ2000);
+        var referencePropagator = new OrbitalPropagator(Planets.SolarMass, earthJ2000);
 
-        Moment now = new DateTime(2021, (int)Month.Aug, 21, 12, 0, 0);
-        var nowPropagator = referencePropagator.Delay(now - reference);
+        Moment now = DateTime.Now;
+        var dt = now - reference;
+        var nowPropagator = referencePropagator.Delay(dt);
         var earthNow = nowPropagator.SatelliteOrbitalElements;
 
         // Asserts
-        
+        var period = earthJ2000.OrbitalPeriod(Planets.SolarMass);
+        Console.WriteLine(period.TotalDays());
+        Assert.AreEqual(1, (double)period.TotalDays() / 365, 0.01);
+
+        var mm = earthJ2000.MeanMotion(Planets.SolarMass);
+        Assert.AreEqual((double)period.TotalDays(), (double)mm.Duration.TotalDays(), 0.000001);
+        Assert.AreEqual(360, (double)mm.Amount.TotalDegrees(), 0.000001);
+
+        var nowMDegrees = earthJ2000.MeanAnomaly.TotalDegrees() + (mm.Amount.TotalDegrees() / mm.Duration.TotalSiderealDays()) * dt.TotalSiderealDays();
+        var nowM = Angle.Degrees(nowMDegrees).Wrap();
+        Assert.AreEqual((double)nowM.TotalDegrees(), (double)earthNow.MeanAnomaly.TotalDegrees(), 0.000001);
     }
 
     //[TestMethod]

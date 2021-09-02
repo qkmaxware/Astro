@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Qkmaxware.Measurement" Version="1.0.6" />
+    <PackageReference Include="Qkmaxware.Measurement" Version="1.0.9" />
   </ItemGroup>
 
 </Project>

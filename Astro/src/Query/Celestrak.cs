@@ -8,8 +8,8 @@ using Qkmaxware.Astro.IO;
 namespace Qkmaxware.Astro.Query {
 
 public static class Celestrak {
-    private static string activeSatellitesUrl = "https://celestrak.com/NORAD/elements/active.txt";
-    private static string spaceStationsUrl = "https://celestrak.com/NORAD/elements/stations.txt";
+    public static readonly string ActiveSatellitesUrl = "https://celestrak.com/NORAD/elements/active.txt";
+    public static readonly string SpaceStationsUrl = "https://celestrak.com/NORAD/elements/stations.txt";
 
     private static StreamReader downloadTleText(string url) {
         var cookies = new CookieContainer();
@@ -27,15 +27,15 @@ public static class Celestrak {
     private static IEnumerable<KeplerianEntity> readTle(string url) {
         var source = downloadTleText(url);
         var serializer = new TwoLineElementDeserializer();
-        return serializer.Deserialize(Masses.Earth, source);
+        return serializer.Deserialize(Planets.EarthJ2000.Mass, source);
     }
 
     public static IEnumerable<KeplerianEntity> SpaceStations() {
-        return readTle(spaceStationsUrl);
+        return readTle(SpaceStationsUrl);
     }
 
     public static IEnumerable<KeplerianEntity> ActiveSatellites() {
-        return readTle(activeSatellitesUrl);
+        return readTle(ActiveSatellitesUrl);
     }
 }
 

@@ -45,18 +45,19 @@ public class OrbitalElements {
     /// Type of anomaly used to create this orbit
     /// </summary>
     public AnomalyType AnomalyType {get; private set;}
+
     /// <summary>
     /// The angle between the direction of periapsis and the current position of the body
     /// </summary>
-    public Angle TrueAnomaly {get; private set;}
+    public Angle TrueAnomaly { get; private set; }
     /// <summary>
     /// The fraction of an elliptical orbit's period that has elapsed since the orbiting body passed periapsis
     /// </summary>
-    public Angle MeanAnomaly {get; private set;}
+    public Angle MeanAnomaly { get; private set; }
     /// <summary>
     /// One of three angular parameters that define a position along an orbit
     /// </summary>
-    public Angle EccentricAnomaly {get; private set;}
+    public Angle EccentricAnomaly { get; private set; }
 
     #endregion
 
@@ -69,14 +70,12 @@ public class OrbitalElements {
     /// </summary>
     /// <param name="parent">body being orbited</param>
     /// <returns>position</returns>
-    public Vec3<Length> CartesianPosition(Mass parent) {
+    public Vec3<Length> CartesianPosition() {
         var nu = this.TrueAnomaly;
         var i = this.Inclination;
-        var mu = parent.μ();
         var a = this.SemimajorAxis;
         var e = this.Eccentricity;
         var r = a * (1 - e * this.EccentricAnomaly.Cos());
-        // var h = Math.Sqrt(mu * a * (1 - Math.Pow(e, 2)));
         var O = this.LongitudeOfAscendingNode;
         var w = this.ArgumentOfPeriapsis;
 
@@ -119,8 +118,8 @@ public class OrbitalElements {
 
         return new Vec3<Speed>(
             dx / Duration.OneSecond,
-            dx / Duration.OneSecond,
-            dx / Duration.OneSecond
+            dy / Duration.OneSecond,
+            dz / Duration.OneSecond
         );
     }
 
@@ -157,11 +156,11 @@ public class OrbitalElements {
         if (IsParabolic || IsHyperbolic) {
             return Duration.Infinite;
         } else {
-            var numerator = 4 * Math.PI * Math.PI;
+            var prefix = 4 * Math.PI * Math.PI;
             var a = this.SemimajorAxis.TotalMetres();
-            var scale = a * a * a;
+            var numerator = a * a * a;
             var denominator = parent.μ();
-            return Duration.Seconds( Math.Sqrt( (numerator/denominator) * (double)scale ) );
+            return Duration.Seconds( ((prefix * numerator) / denominator).Sqrt() );
         }
     }
     /// <summary>
@@ -332,42 +331,42 @@ public class OrbitalElements {
         // Compute true anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.Eccentric:
-                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.True:
             default:
-                this.TrueAnomaly = anomalyValue;
+                this.TrueAnomaly = anomalyValue.Wrap();
                 break;
         }
 
         // Compute mean anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.MeanAnomaly = anomalyValue;
+                this.MeanAnomaly = anomalyValue.Wrap();
                 break;
             case AnomalyType.Eccentric:
-                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.True:
             default:
-                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
         }
 
         // Compute eccentric anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.Eccentric:
-                this.EccentricAnomaly = anomalyValue;
+                this.EccentricAnomaly = anomalyValue.Wrap();
                 break;
             case AnomalyType.True:
             default:
-                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
         }
     }
@@ -394,52 +393,48 @@ public class OrbitalElements {
         // Compute true anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.TrueAnomaly = Angle.Radians(mean2True(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.Eccentric:
-                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.TrueAnomaly = Angle.Radians(eccentric2True(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.True:
             default:
-                this.TrueAnomaly = anomalyValue;
+                this.TrueAnomaly = anomalyValue.Wrap();
                 break;
         }
 
         // Compute mean anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.MeanAnomaly = anomalyValue;
+                this.MeanAnomaly = anomalyValue.Wrap();
                 break;
             case AnomalyType.Eccentric:
-                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.MeanAnomaly = Angle.Radians(eccentricToMean(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.True:
             default:
-                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.MeanAnomaly = Angle.Radians(true2Mean(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
         }
 
         // Compute eccentric anomaly
         switch (AnomalyType) {
             case AnomalyType.Mean:
-                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.EccentricAnomaly = Angle.Radians(mean2Eccentric(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
             case AnomalyType.Eccentric:
-                this.EccentricAnomaly = anomalyValue;
+                this.EccentricAnomaly = anomalyValue.Wrap();
                 break;
             case AnomalyType.True:
             default:
-                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, (double)anomalyValue.TotalRadians()));
+                this.EccentricAnomaly = Angle.Radians(true2Eccentric(Eccentricity, (double)anomalyValue.Wrap().TotalRadians())).Wrap();
                 break;
         }
     }
 
 
     # region Anomaly Conversion Utilities
-
-    private void fillAnomalies(AnomalyType anomalyType, Angle anomalyValue) {
-        
-    }
 
     /// <summary>
     /// Convert mean anomaly to true anomaly
