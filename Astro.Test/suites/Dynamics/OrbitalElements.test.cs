@@ -87,22 +87,29 @@ public class OrbitalElementsTest {
         Moment reference = Moment.J2000;
         var referencePropagator = new OrbitalPropagator(Planets.SolarMass, earthJ2000);
 
-        Moment now = DateTime.Now;
+        Moment now = new DateTime(2021, 09, 06, 12, 0, 0, DateTimeKind.Utc);
         var dt = now - reference;
+        Assert.AreEqual(7919, (double)dt.TotalDays(), 0.1);
         var nowPropagator = referencePropagator.Delay(dt);
         var earthNow = nowPropagator.SatelliteOrbitalElements;
 
         // Asserts
         var period = earthJ2000.OrbitalPeriod(Planets.SolarMass);
-        Console.WriteLine(period.TotalDays());
-        Assert.AreEqual(1, (double)period.TotalDays() / 365, 0.01);
+        Assert.AreEqual(1, (double)period.TotalDays() / 365, 0.01); // Period of 1 year
 
         var mm = earthJ2000.MeanMotion(Planets.SolarMass);
-        Assert.AreEqual((double)period.TotalDays(), (double)mm.Duration.TotalDays(), 0.000001);
-        Assert.AreEqual(360, (double)mm.Amount.TotalDegrees(), 0.000001);
+        Assert.AreEqual((double)period.TotalDays(), (double)mm.Duration.TotalDays(), 0.000001); // Period of 1 year
+        Assert.AreEqual(360, (double)mm.Amount.TotalDegrees(), 0.000001);                       // 360 degrees travelled
 
+        Assert.AreEqual(100.46435, (double)earthJ2000.MeanAnomaly.TotalDegrees(), 0.00001);     // Confirm initial Mean Anomaly
+        Console.WriteLine($"{mm.Amount.TotalDegrees()} / {mm.Duration.TotalSiderealDays()} = {mm.Amount.TotalDegrees() / mm.Duration.TotalSiderealDays()}");
+        Console.WriteLine($"{mm.Amount.TotalDegrees()} / {mm.Duration.TotalSiderealDays()} * {dt.TotalSiderealDays()} = {(mm.Amount.TotalDegrees() / mm.Duration.TotalSiderealDays()) * dt.TotalSiderealDays()}");
+        Console.WriteLine($"M(t) = {earthJ2000.MeanAnomaly} + ({mm.Amount} / {mm.Duration}) * {dt}");
         var nowMDegrees = earthJ2000.MeanAnomaly.TotalDegrees() + (mm.Amount.TotalDegrees() / mm.Duration.TotalSiderealDays()) * dt.TotalSiderealDays();
         var nowM = Angle.Degrees(nowMDegrees).Wrap();
+        Console.WriteLine($"M(t) = {nowMDegrees}° = {nowM}");
+        Assert.AreEqual(7910, (double)nowMDegrees, 10);      // Angle before wrapping
+        Assert.AreEqual(346.3, (double)nowM.TotalDegrees(), 0.1);  // Angle after wrapping
         Assert.AreEqual((double)nowM.TotalDegrees(), (double)earthNow.MeanAnomaly.TotalDegrees(), 0.000001);
     }
 

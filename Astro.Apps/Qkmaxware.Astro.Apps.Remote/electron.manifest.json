@@ -3,16 +3,23 @@
   "splashscreen": {
     "imageFile": ""
   },
-  "name": "Remote",
+  "name": "Astro.Remote",
   "author": "",
   "singleInstance": false,
   "environment": "Production",
   "build": {
     "appId": "com.Qkmaxware.Astro.Remote.app",
-    "productName": "Remote",
+    "productName": "Astro.Remote",
     "copyright": "Copyright © 2020",
     "buildVersion": "1.0.0",
     "compression": "maximum",
+    "win": { 
+      "target": ["portable"]
+    },
+    "mac": {},
+    "linux": {
+      "target": ["AppImage"]
+    },
     "directories": {
       "output": "../../../bin/Desktop"
     },
